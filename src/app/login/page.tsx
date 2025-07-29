@@ -47,9 +47,13 @@ export default function LoginPage() {
       const user = await loginUser(data.username, data.password);
       if (user) {
         toast({ title: "Login Successful", description: `Welcome back, ${user.username}!` });
-        const callbackUrl = searchParams.get('callbackUrl') || '/admin';
+        const callbackUrl = searchParams.get('callbackUrl');
         // Use window.location.href for a full page reload to ensure middleware runs
-        window.location.href = callbackUrl;
+        if (callbackUrl) {
+          window.location.href = callbackUrl;
+        } else {
+          window.location.href = '/admin'; // Fallback to /admin if no callbackUrl is present
+        }
       } else {
         throw new Error("Invalid username or password.");
       }
