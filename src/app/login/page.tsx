@@ -48,8 +48,8 @@ export default function LoginPage() {
       if (user) {
         toast({ title: "Login Successful", description: `Welcome back, ${user.username}!` });
         const callbackUrl = searchParams.get('callbackUrl') || '/admin';
-        router.refresh(); // Refresh the current route to update session state on the server
-        router.push(callbackUrl); // Then navigate to the target route
+        // Use window.location.href for a full page reload to ensure middleware runs
+        window.location.href = callbackUrl;
       } else {
         throw new Error("Invalid username or password.");
       }
