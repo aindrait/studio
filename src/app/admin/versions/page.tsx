@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { getModules, updateModule } from '@/ai/flows/module-crud';
 import type { Module, Version } from '@/lib/types';
-import { PlusCircle, Trash2, Pencil, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, MoreHorizontal, ArrowUpCircle, Wrench } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -438,5 +438,3 @@ export default function VersionsPage() {
     </div>
   );
 }
-
-    
