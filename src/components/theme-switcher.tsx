@@ -14,12 +14,11 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
   DropdownMenuPortal,
-  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
 import { Moon, Sun, Palette } from "lucide-react"
 
 export function ThemeSwitcher() {
-  const { setTheme, setVariant, variant, theme } = useTheme()
+  const { setTheme, setVariant } = useTheme()
 
   return (
     <DropdownMenu>
