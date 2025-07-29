@@ -56,8 +56,8 @@ export default function Home() {
         setModules(fetchedModules);
         setCategories(fetchedCategories);
 
-        if (fetchedModules.length > 0) {
-          setSelectedModule(fetchedModules[0]);
+        if (fetchedModules.length > 0 && !selectedModule) {
+           setSelectedModule(fetchedModules[0]);
         }
       } catch (error) {
         toast({
@@ -70,7 +70,7 @@ export default function Home() {
     }
     initialFetch();
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast]); 
+  }, []); 
 
 
   const filteredModules = React.useMemo(() => {
@@ -108,7 +108,7 @@ export default function Home() {
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Logo className="size-6 text-primary" />
-            <h1 className="text-lg font-semibold font-headline">ModuleMaestro</h1>
+            <h1 className="text-lg font-semibold font-headline">MDS Manual</h1>
           </div>
         </SidebarHeader>
         <SidebarContent>

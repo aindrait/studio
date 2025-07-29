@@ -52,7 +52,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
             <BookOpen className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="mt-4 font-headline text-2xl">
-            Welcome to ModuleMaestro
+            Welcome to MDS Manual
           </CardTitle>
           <CardDescription>
             Select a module from the sidebar to view its documentation.

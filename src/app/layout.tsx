@@ -10,7 +10,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ModuleMaestro",
+  title: "MDS Manual",
   description:
     "Your all-in-one solution for module documentation and version tracking.",
 };

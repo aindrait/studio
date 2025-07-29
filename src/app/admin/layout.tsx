@@ -18,7 +18,7 @@ export default function AdminLayout({
             <div className="flex items-center gap-2">
               <Logo className="h-6 w-6 text-primary" />
               <h1 className="text-lg font-semibold font-headline">
-                ModuleMaestro Admin
+                MDS Manual Admin
               </h1>
             </div>
           </SidebarHeader>
