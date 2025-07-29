@@ -73,13 +73,13 @@ const editUserSchema = userSchema.extend({
 
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [users, setUsers] = useState<Omit<AdminUser, 'password'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<Omit<AdminUser, 'password'> | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+  const [userToDelete, setUserToDelete] = useState<Omit<AdminUser, 'password'> | null>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof userSchema>>({
@@ -119,7 +119,7 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  const handleOpenDialog = (user: AdminUser | null = null) => {
+  const handleOpenDialog = (user: Omit<AdminUser, 'password'> | null = null) => {
     if (user) {
       setIsEditing(true);
       setCurrentUser(user);
@@ -147,7 +147,7 @@ export default function UsersPage() {
              form.setError("password", { message: "Password must be at least 6 characters." });
              return;
         }
-        await createAdminUser(values as AdminUser);
+        await createAdminUser(values as Omit<AdminUser, 'id'>);
         toast({ title: "User Created" });
       }
       fetchUsers();
@@ -161,7 +161,7 @@ export default function UsersPage() {
     }
   };
 
-  const confirmDelete = (user: AdminUser) => {
+  const confirmDelete = (user: Omit<AdminUser, 'password'>) => {
     setUserToDelete(user);
     setIsAlertOpen(true);
   };
