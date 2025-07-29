@@ -1,0 +1,104 @@
+diff --git a/node_modules/react-quill/lib/component.js b/node_modules/react-quill/lib/component.js
+index 4b95ddf..a754f76 100644
+--- a/node_modules/react-quill/lib/component.js
++++ b/node_modules/react-quill/lib/component.js
+@@ -1,5 +1,5 @@
+ 'use strict';
+-
++Object.defineProperty(exports, "__esModule", { value: true });
+ var React = require('react');
+ var ReactDOM = require('react-dom');
+ var Quill = require('quill');
+@@ -12,6 +12,12 @@ var Quill = require('quill');
+ var PropTypes = require('prop-types');
+ var isEqual = require('lodash/isEqual');
+ var isFunction = require('lodash/isFunction');
++var findDOMNode = function (ref) {
++    if (!ref)
++        return null;
++    if (ref.nodeType)
++        return ref;
++    return ReactDOM.findDOMNode(ref);
++};
+ 
+ var QuillComponent = React.createClass({
+ 
+@@ -351,7 +357,7 @@ var QuillComponent = React.createClass({
+ 	},
+ 
+ 	getEditorNode: function getEditorNode() {
+-		return ReactDOM.findDOMNode(this.editor);
++		return findDOMNode(this.editor);
+ 	},
+ 
+ 	getEditingAreaNode: function getEditingAreaNode() {
+diff --git a/node_modules/react-quill/lib/index.d.ts b/node_modules/react-quill/lib/index.d.ts
+index e3993d0..4141687 100644
+--- a/node_modules/react-quill/lib/index.d.ts
++++ b/node_modules/react-quill/lib/index.d.ts
+@@ -1,5 +1,6 @@
+ import * as React from 'react';
+ import * as Quill from 'quill';
++import { Expand } from './types';
+ 
+ export = ReactQuill;
+ 
+@@ -118,10 +119,16 @@ type ReactQuill = typeof ReactQuill;
+ declare namespace ReactQuill {
+   type Value = string | Quill.Delta;
+   type Range = Quill.RangeStatic;
++  type Sources = Quill.Sources;
++  type Bounds = Quill.BoundsStatic;
++  type Formats = Quill.StringMap;
++
++  type UnprivilegedEditor = Omit<Quill.Quill, 'getHTML'>;
+ 
+   interface UnprivilegedEditor {
+     getLength(): number;
+     getText(index?: number, length?: number): string;
+-    getHTML(): string;
++    getContents(index?: number, length?: number): Quill.Delta;
+     getBounds(index: number, length?: number): Quill.BoundsStatic;
+     getSelection(focus?: boolean): Quill.RangeStatic;
+     getModule(name: string): any;
+@@ -130,22 +137,21 @@ declare namespace ReactQuill {
+   interface QuillOptions extends Quill.QuillOptions {
+     scrollingContainer?: string | HTMLElement;
+   }
++  type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
++  type Overwrite<T, U> = Omit<T, keyof U> & U;
+ 
+   interface ReactQuillProps {
+     id?: string;
+     className?: string;
+     style?: React.CSSProperties;
+     value?: Value;
+-    defaultValue?: Value;
+     readOnly?: boolean;
+     placeholder?: string;
+     tabIndex?: number;
+     scrollingContainer?: string | HTMLElement;
+     onChange?(value: string, delta: Quill.Delta, source: Quill.Sources, editor: UnprivilegedEditor): void;
+     onChangeSelection?(selection: Range, source: Quill.Sources, editor: UnprivilegedEditor): void;
+-    onFocus?(selection: Range, source: Quill.Sources, editor: UnprivilegedEditor): void;
+-    onBlur?(previousSelection: Range, source: Quill.Sources, editor: UnprivilegedEditor): void;
+-    onKeyPress?(event: React.KeyboardEvent<any>): void;
+-    onKeyDown?(event: React.KeyboardEvent<any>): void;
+-    onKeyUp?(event: React.KeyboardEvent<any>): void;
++    onFocus?(selection: Range, source: Sources, editor: UnprivilegedEditor): void;
++    onBlur?(previousSelection: Range, source: Sources, editor: UnprivilegedEditor): void;
++    onKeyDown?: React.EventHandler<any>;
++    onKeyPress?: React.EventHandler<any>;
++    onKeyUp?: React.EventHandler<any>;
+     /**
+      * The component will pass its `value` to the editor initially.
+      * @deprecated Use `value` instead.
+      * @see https://github.com/zenoamaro/react-quill#using-the-uncontrolled-version-of-the-component
+      */
++    defaultValue?: Value;
+     children?: React.ReactElement<any>;
+   }
+-
++  type ComponentProps = Expand<Overwrite<ReactQuillProps, QuillOptions>>;
+ }
+
