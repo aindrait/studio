@@ -7,19 +7,21 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import 'react-quill/dist/quill.snow.css';
+import dynamic from 'next/dynamic';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { getModule, updateModule, getCategories } from '@/ai/flows/module-crud';
 import type { Module, Category } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import { QuillEditor } from '@/components/admin/quill-editor';
+
+const QuillEditor = dynamic(() => import('@/components/admin/quill-editor').then(mod => mod.QuillEditor), { ssr: false });
+
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),

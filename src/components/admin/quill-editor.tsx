@@ -1,7 +1,7 @@
 "use client";
 
-import dynamic from 'next/dynamic';
-import React, { useMemo } from 'react';
+import React from 'react';
+import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 interface QuillEditorProps {
@@ -10,11 +10,6 @@ interface QuillEditorProps {
 }
 
 export function QuillEditor({ value, onChange }: QuillEditorProps) {
-    const ReactQuill = useMemo(
-        () => dynamic(() => import('react-quill'), { ssr: false }),
-        []
-    );
-
     const modules = {
         toolbar: [
             [{ header: [1, 2, 3, 4, 5, 6, false] }],
