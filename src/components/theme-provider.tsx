@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,38 +9,33 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }
 
-
 export function useTheme() {
-    const { theme, setTheme, ...rest } = useNextTheme();
+    const { theme: baseTheme, setTheme: setBaseTheme, ...rest } = useNextTheme();
+    const [variant, setVariant] = React.useState<string | null>(null);
 
     React.useEffect(() => {
-        if (theme) {
-            const [baseTheme, themeVariant] = theme.split(' ');
-            document.documentElement.classList.remove('theme-zinc', 'theme-stone', 'theme-rose');
-            if (themeVariant) {
-                document.documentElement.classList.add(themeVariant);
-            }
+        const storedVariant = localStorage.getItem('theme-variant');
+        if (storedVariant) {
+            setVariant(storedVariant);
         }
-    }, [theme]);
+    }, []);
 
-    const customSetTheme = (newTheme: string) => {
-        const [baseTheme, themeVariant] = newTheme.split(' ');
-        
-        // Always set the full theme string to next-themes state
-        setTheme(newTheme);
-
-        // Manually update the document classes
+    React.useEffect(() => {
         document.documentElement.classList.remove('theme-zinc', 'theme-stone', 'theme-rose');
-        if (themeVariant) {
-            document.documentElement.classList.add(themeVariant);
+        if (variant) {
+            document.documentElement.classList.add(variant);
+            localStorage.setItem('theme-variant', variant);
+        } else {
+             localStorage.removeItem('theme-variant');
         }
-        // Set the base theme class (light/dark) via next-themes
-        // next-themes will handle the 'light' or 'dark' class on the html element
-        // by just setting the base theme.
-        setTheme(baseTheme);
+    }, [variant]);
+
+
+    const setTheme = (newTheme: string) => {
+        const [newBaseTheme, newVariant] = newTheme.split(' ');
+        setBaseTheme(newBaseTheme);
+        setVariant(newVariant || null);
     };
-    
-    // The custom setter is what we expose.
-    // The `theme` from `useNextTheme` will just be 'light' or 'dark' after our custom logic runs.
-    return { ...rest, theme, setTheme: customSetTheme };
+
+    return { ...rest, theme: baseTheme, setTheme };
 }
