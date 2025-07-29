@@ -49,11 +49,7 @@ export default function LoginPage() {
         toast({ title: "Login Successful", description: `Welcome back, ${user.username}!` });
         const callbackUrl = searchParams.get('callbackUrl');
         // Use window.location.href for a full page reload to ensure middleware runs
-        if (callbackUrl) {
-          window.location.href = callbackUrl;
-        } else {
-          window.location.href = '/admin'; // Fallback to /admin if no callbackUrl is present
-        }
+        window.location.href = callbackUrl || '/admin';
       } else {
         throw new Error("Invalid username or password.");
       }
