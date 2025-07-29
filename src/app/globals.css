@@ -24,6 +24,15 @@
     --input: 214 30% 93%;
     --ring: 195 73% 65%;
     --radius: 0.5rem;
+
+    --sidebar-background: 224 71% 8%;
+    --sidebar-foreground: 214 41% 92%;
+    --sidebar-primary: 195 73% 73%;
+    --sidebar-primary-foreground: 224 71% 10%;
+    --sidebar-accent: 214 41% 18%;
+    --sidebar-accent-foreground: 214 41% 96%;
+    --sidebar-border: 214 41% 18%;
+    --sidebar-ring: 195 73% 73%;
   }
  
   .dark {
@@ -46,6 +55,15 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 195 73% 73%;
+
+    --sidebar-background: 222 84% 4.9%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 195 73% 73%;
+    --sidebar-primary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-accent: 217.2 32.6% 17.5%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 195 73% 73%;
   }
 
   .theme-zinc {

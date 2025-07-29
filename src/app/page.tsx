@@ -35,6 +35,7 @@ import { Logo } from "@/components/icons";
 import Link from "next/link";
 import { getModules, getCategories } from "@/ai/flows/module-crud";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export default function Home() {
   const [modules, setModules] = React.useState<Module[]>([]);
@@ -181,7 +182,10 @@ export default function Home() {
           <h2 className="text-xl font-bold font-headline">
             {selectedModule ? selectedModule.name : "Welcome"}
           </h2>
-          <div className="w-7 h-7" />
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <div className="w-7 h-7" />
+          </div>
         </header>
         <main className="p-4 md:p-8">
           <DocumentationViewer module={selectedModule} />

@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -19,43 +19,21 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          <Palette className="mr-2" />
-          Themes
+        <Button variant="outline" size="icon">
+           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+           <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 h-4 w-4" />
-          Default
+          Light
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 h-4 w-4" />
           Dark
         </DropdownMenuItem>
-         <DropdownMenuItem onClick={() => setTheme("light theme-zinc")}>
-          <Sun className="mr-2 h-4 w-4" />
-          Zinc
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark theme-zinc")}>
-          <Moon className="mr-2 h-4 w-4" />
-          Dark Zinc
-        </DropdownMenuItem>
-         <DropdownMenuItem onClick={() => setTheme("light theme-stone")}>
-          <Sun className="mr-2 h-4 w-4" />
-          Stone
-        </DropdownMenuItem>
-         <DropdownMenuItem onClick={() => setTheme("dark theme-stone")}>
-          <Moon className="mr-2 h-4 w-4" />
-          Dark Stone
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("light theme-rose")}>
-          <Sun className="mr-2 h-4 w-4" />
-          Rose
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark theme-rose")}>
-          <Moon className="mr-2 h-4 w-4" />
-          Dark Rose
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+          System
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
