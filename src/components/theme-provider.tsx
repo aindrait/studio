@@ -33,23 +33,34 @@ function CustomThemeProvider({ children }: { children: React.ReactNode }) {
   const [variant, setVariant] = React.useState<Variant>("default");
 
   React.useEffect(() => {
-    const storedVariant = localStorage.getItem("theme-variant") as Variant | null;
-    if (storedVariant) {
-      setVariant(storedVariant);
+    try {
+        const storedVariant = localStorage.getItem("theme-variant") as Variant | null;
+        if (storedVariant && ["default", "zinc", "stone", "rose"].includes(storedVariant)) {
+            setVariant(storedVariant);
+        }
+    } catch (e) {
+        console.error("Failed to access localStorage for theme variant.");
     }
   }, []);
 
   React.useEffect(() => {
     const root = window.document.documentElement;
     
-    // Remove any existing theme- variant classes
     root.classList.remove("theme-zinc", "theme-stone", "theme-rose");
 
     if (variant !== "default") {
       root.classList.add(`theme-${variant}`);
-      localStorage.setItem("theme-variant", variant);
+       try {
+            localStorage.setItem("theme-variant", variant);
+       } catch (e) {
+            console.error("Failed to set theme variant in localStorage.");
+       }
     } else {
-      localStorage.removeItem("theme-variant");
+       try {
+            localStorage.removeItem("theme-variant");
+       } catch (e) {
+           console.error("Failed to remove theme variant from localStorage.");
+       }
     }
   }, [variant]);
   
