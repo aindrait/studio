@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut } from 'lucide-react';
 import { logout } from '@/lib/session';
 import { useRouter } from 'next/navigation';
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export function UserNav({ user }: { user: { username: string } }) {
     const router = useRouter();
