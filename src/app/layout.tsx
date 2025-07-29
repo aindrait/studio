@@ -40,6 +40,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          storageKey="mds-manual-theme"
         >
             {children}
             <Toaster />
