@@ -1,8 +1,7 @@
-
 "use client";
 
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import 'react-quill/dist/quill.snow.css';
 
 interface QuillEditorProps {
@@ -10,26 +9,30 @@ interface QuillEditorProps {
     onChange: (value: string) => void;
 }
 
-// This is a workaround for the findDOMNode is not a function error
-// See: https://github.com/zenoamaro/react-quill/issues/893
-function Editor(props: QuillEditorProps) {
+export function QuillEditor({ value, onChange }: QuillEditorProps) {
     const ReactQuill = useMemo(
         () => dynamic(() => import('react-quill'), { ssr: false }),
         []
     );
 
+    const modules = {
+        toolbar: [
+            [{ header: [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+            [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+            ['link', 'image'],
+            ['clean'],
+        ],
+    };
+
     return (
         <ReactQuill
-            value={props.value}
-            onChange={props.onChange}
+            value={value}
+            onChange={onChange}
             theme="snow"
+            modules={modules}
             placeholder="Write your module manual here..."
             className="h-full"
         />
     );
-}
-
-
-export function QuillEditor(props: QuillEditorProps) {
-    return <Editor {...props} />;
 }
