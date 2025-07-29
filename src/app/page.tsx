@@ -46,21 +46,22 @@ export default function Home() {
     try {
       const fetchedModules = await getModules();
       setModules(fetchedModules);
-
-      if (selectedModule) {
-        const updatedSelectedModule = fetchedModules.find(m => m.id === selectedModule.id);
-        setSelectedModule(updatedSelectedModule || (fetchedModules.length > 0 ? fetchedModules[0] : null));
-      } else if (fetchedModules.length > 0) {
-        setSelectedModule(fetchedModules[0]);
-      }
       
+      if (!selectedModule && fetchedModules.length > 0) {
+        setSelectedModule(fetchedModules[0]);
+      } else if (selectedModule) {
+        // If there's a selected module, refresh its data from the new fetch
+        const refreshedModule = fetchedModules.find(m => m.id === selectedModule.id);
+        setSelectedModule(refreshedModule || (fetchedModules.length > 0 ? fetchedModules[0] : null));
+      }
+
     } catch (error) {
        toast({
             variant: "destructive",
             title: "Failed to refresh modules",
         });
     }
-  }, [selectedModule, toast]);
+  }, [toast, selectedModule]);
 
 
   React.useEffect(() => {
