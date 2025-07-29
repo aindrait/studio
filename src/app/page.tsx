@@ -42,13 +42,11 @@ export default function Home() {
   const [selectedModule, setSelectedModule] = React.useState<Module | null>(null);
   const { toast } = useToast();
 
-  const fetchModules = React.useCallback(async (showToast = false) => {
+  const fetchModules = React.useCallback(async () => {
     try {
       const fetchedModules = await getModules();
       setModules(fetchedModules);
 
-      // If a module was already selected, find its updated version in the new list.
-      // Otherwise, select the first module.
       if (selectedModule) {
         const updatedSelectedModule = fetchedModules.find(m => m.id === selectedModule.id);
         setSelectedModule(updatedSelectedModule || (fetchedModules.length > 0 ? fetchedModules[0] : null));
@@ -56,36 +54,20 @@ export default function Home() {
         setSelectedModule(fetchedModules[0]);
       }
       
-      if(showToast) {
-         toast({
-          title: "Data Refreshed",
-          description: "Module list has been updated.",
-        });
-      }
-
     } catch (error) {
-       if(showToast){
-        toast({
+       toast({
             variant: "destructive",
             title: "Failed to refresh modules",
         });
-       }
     }
   }, [selectedModule, toast]);
 
 
   React.useEffect(() => {
+    // This will run every time the page is focused or re-rendered
+    // ensuring data is fresh after navigation.
     fetchModules();
-    
-    // Set up an event listener to refetch data when the window gets focus
-    window.addEventListener('focus', () => fetchModules(true));
-
-    // Cleanup listener on component unmount
-    return () => {
-      window.removeEventListener('focus', () => fetchModules(true));
-    }
-
-  }, []); // Run only once on initial mount
+  });
 
 
   const filteredModules = React.useMemo(() => {

@@ -37,40 +37,28 @@ export default function ModulesPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const fetchModules = useCallback(async (showToast = false) => {
+  const fetchModules = useCallback(async () => {
     try {
       setLoading(true);
       const fetchedModules = await getModules();
       setModules(fetchedModules);
-       if (showToast) {
-        toast({
-          title: "Modules Refreshed",
-          description: "The list of modules has been updated.",
-        });
-      }
     } catch (error) {
-      if (showToast) {
         toast({
           variant: "destructive",
           title: "Failed to fetch modules",
           description: "Could not load the list of modules.",
         });
-      }
     } finally {
       setLoading(false);
     }
   }, [toast]);
 
   useEffect(() => {
+    // This will run every time the page is focused or re-rendered
+    // ensuring data is fresh after navigation.
     fetchModules();
-    
-    const handleFocus = () => fetchModules(true);
-    window.addEventListener('focus', handleFocus);
+  });
 
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-    }
-  }, [fetchModules]);
 
   const handleDelete = async (moduleId: string) => {
     if (confirm("Are you sure you want to delete this module?")) {
