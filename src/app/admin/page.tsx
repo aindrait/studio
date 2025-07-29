@@ -11,7 +11,7 @@ export default function AdminPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" legacyBehavior passHref>
+              <Link href="/">
                 <Button variant="outline" size="icon" className="h-8 w-8">
                   <ArrowLeft className="h-4 w-4" />
                   <span className="sr-only">Back to app</span>

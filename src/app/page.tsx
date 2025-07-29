@@ -126,14 +126,12 @@ export default function Home() {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <Link href="/admin" legacyBehavior passHref>
-            <SidebarMenuButton asChild>
-              <a className="w-full justify-start">
-                <ShieldCheck />
-                Admin Panel
-              </a>
-            </SidebarMenuButton>
-          </Link>
+          <SidebarMenuButton asChild>
+            <Link href="/admin" className="w-full justify-start">
+              <ShieldCheck />
+              Admin Panel
+            </Link>
+          </SidebarMenuButton>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
