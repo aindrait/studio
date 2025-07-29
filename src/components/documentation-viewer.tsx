@@ -23,6 +23,7 @@ import {
   PlusCircle,
   Tag,
   Wrench,
+  BookOpen,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -48,7 +49,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
       <Card className="flex flex-col items-center justify-center text-center p-8 h-[calc(100vh-10rem)]">
         <CardHeader>
           <div className="mx-auto bg-primary/20 p-4 rounded-full">
-            <FileText className="h-12 w-12 text-primary" />
+            <BookOpen className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="mt-4 font-headline text-2xl">
             Welcome to ModuleMaestro
@@ -118,38 +119,44 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-              {module.versions.map((version) => (
-                <AccordionItem
-                  key={version.version}
-                  value={`item-${version.version}`}
-                >
-                  <AccordionTrigger>
-                    <div className="flex flex-col items-start">
-                      <span className="font-semibold">v{version.version}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {version.date}
-                      </span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <ul className="space-y-2">
-                      {version.changes.map((change, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <div className="mt-1">
-                            {versionIcons[change.type]}
-                          </div>
-                          <span className="text-sm">{change.description}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+             {module.versions.length > 0 ? (
+                <Accordion type="single" collapsible className="w-full" defaultValue={`item-${module.versions[0].version}`}>
+                {module.versions.map((version) => (
+                    <AccordionItem
+                    key={version.version}
+                    value={`item-${version.version}`}
+                    >
+                    <AccordionTrigger>
+                        <div className="flex flex-col items-start">
+                        <span className="font-semibold">v{version.version}</span>
+                        <span className="text-xs text-muted-foreground">
+                            {version.date}
+                        </span>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <ul className="space-y-2">
+                        {version.changes.map((change, index) => (
+                            <li key={index} className="flex items-start gap-3">
+                            <div className="mt-1">
+                                {versionIcons[change.type]}
+                            </div>
+                            <span className="text-sm">{change.description}</span>
+                            </li>
+                        ))}
+                        </ul>
+                    </AccordionContent>
+                    </AccordionItem>
+                ))}
+                </Accordion>
+             ) : (
+                <p className="text-sm text-center text-muted-foreground py-4">No version history found.</p>
+             )}
           </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+
+    

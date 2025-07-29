@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from "date-fns";
@@ -15,8 +15,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { getModules, updateModule } from '@/ai/flows/module-crud';
-import type { Module, Version, VersionChange } from '@/lib/types';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import type { Module, Version } from '@/lib/types';
+import { PlusCircle, Trash2, Pencil, MoreHorizontal } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+
 
 const versionChangeSchema = z.object({
   type: z.enum(["new", "improvement", "fix"]),
@@ -31,10 +36,19 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const versionIcons = {
+  new: <PlusCircle className="h-4 w-4 text-green-500" />,
+  improvement: <ArrowUpCircle className="h-4 w-4 text-blue-500" />,
+  fix: <Wrench className="h-4 w-4 text-orange-500" />,
+};
+
 export default function VersionsPage() {
   const { toast } = useToast();
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedModule, setSelectedModule] = useState<Module | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingVersion, setEditingVersion] = useState<Version | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,20 +64,41 @@ export default function VersionsPage() {
     name: "changes",
   });
 
-  useEffect(() => {
-    async function fetchModulesData() {
-      try {
-        setLoading(true);
-        const fetchedModules = await getModules();
-        setModules(fetchedModules);
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to load modules" });
-      } finally {
-        setLoading(false);
-      }
+  // Form for editing a version
+  const editForm = useForm<Version>({
+     defaultValues: {
+      version: '',
+      date: '',
+      changes: [],
+    },
+  });
+
+  const { fields: editFields, append: editAppend, remove: editRemove } = useFieldArray({
+      control: editForm.control,
+      name: "changes"
+  });
+
+  async function fetchModulesData() {
+    try {
+      setLoading(true);
+      const fetchedModules = await getModules();
+      setModules(fetchedModules);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to load modules" });
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchModulesData();
   }, [toast]);
+  
+  const handleModuleSelect = (moduleId: string) => {
+    form.setValue('moduleId', moduleId);
+    const module = modules.find(m => m.id === moduleId);
+    setSelectedModule(module || null);
+  }
 
   const onSubmit = async (values: FormValues) => {
     const targetModule = modules.find(m => m.id === values.moduleId);
@@ -87,133 +122,321 @@ export default function VersionsPage() {
       await updateModule(updatedModule);
       toast({ title: "Version Added", description: `Successfully added v${values.version} to ${targetModule.name}.` });
       form.reset({
-        moduleId: '',
+        moduleId: values.moduleId,
         version: '',
         changes: [{ type: 'improvement', description: '' }],
       });
+      await fetchModulesData(); // Refetch to update the list
+      const updatedMod = await getModules().then(mods => mods.find(m => m.id === values.moduleId));
+      setSelectedModule(updatedMod || null);
     } catch (error) {
       toast({ variant: "destructive", title: "Update Failed", description: "Could not add the new version." });
     }
   };
 
+  const handleOpenEditDialog = (version: Version) => {
+    setEditingVersion(version);
+    editForm.reset({
+        version: version.version,
+        date: version.date,
+        changes: version.changes
+    });
+    setIsEditDialogOpen(true);
+  }
+  
+  const handleEditSubmit = async (values: Version) => {
+    if (!selectedModule || !editingVersion) return;
+
+    const updatedVersions = selectedModule.versions.map(v => 
+      v.version === editingVersion.version ? values : v
+    );
+
+    const updatedModule = {
+      ...selectedModule,
+      versions: updatedVersions,
+    };
+
+     try {
+      await updateModule(updatedModule);
+      toast({ title: "Version Updated" });
+      setIsEditDialogOpen(false);
+      setEditingVersion(null);
+      await fetchModulesData();
+      const updatedMod = await getModules().then(mods => mods.find(m => m.id === selectedModule.id));
+      setSelectedModule(updatedMod || null);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Update Failed" });
+    }
+  }
+
+  const handleDeleteVersion = async (versionNumber: string) => {
+    if (!selectedModule) return;
+    if (!confirm(`Are you sure you want to delete version ${versionNumber}?`)) return;
+
+    const updatedVersions = selectedModule.versions.filter(v => v.version !== versionNumber);
+    const updatedModule = { ...selectedModule, versions: updatedVersions };
+
+    try {
+      await updateModule(updatedModule);
+      toast({ title: "Version Deleted" });
+      await fetchModulesData();
+      const updatedMod = await getModules().then(mods => mods.find(m => m.id === selectedModule.id));
+      setSelectedModule(updatedMod || null);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Deletion Failed" });
+    }
+  };
+
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add New Version</CardTitle>
-        <CardDescription>Add a new version or changelog entry to an existing module.</CardDescription>
-      </CardHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="moduleId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Module</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading}>
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Add New Version</CardTitle>
+          <CardDescription>Add a new version or changelog entry to an existing module.</CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
+                name="moduleId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Module</FormLabel>
+                    <Select onValueChange={handleModuleSelect} value={field.value} disabled={loading}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a module..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {modules.map(module => (
+                          <SelectItem key={module.id} value={module.id}>{module.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="version"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Version Number</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a module..." />
-                      </SelectTrigger>
+                      <Input placeholder="e.g., 1.2.3" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {modules.map(module => (
-                        <SelectItem key={module.id} value={module.id}>{module.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="version"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Version Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 1.2.3" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div>
-              <FormLabel>Changes</FormLabel>
-              <div className="space-y-4 mt-2">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-start gap-4 p-4 border rounded-md">
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 flex-1">
-                      <FormField
-                        control={form.control}
-                        name={`changes.${index}.type`}
-                        render={({ field }) => (
-                          <FormItem className="md:col-span-2">
-                            <FormLabel className="sr-only">Change Type</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Type" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="new">New</SelectItem>
-                                <SelectItem value="improvement">Improvement</SelectItem>
-                                <SelectItem value="fix">Fix</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`changes.${index}.description`}
-                        render={({ field }) => (
-                           <FormItem className="md:col-span-4">
-                              <FormLabel className="sr-only">Description</FormLabel>
-                              <FormControl>
-                                <Textarea placeholder="Describe the change..." {...field} />
-                              </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div>
+                <FormLabel>Changes</FormLabel>
+                <div className="space-y-4 mt-2">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="flex items-start gap-4 p-4 border rounded-md">
+                      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 flex-1">
+                        <FormField
+                          control={form.control}
+                          name={`changes.${index}.type`}
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                              <FormLabel className="sr-only">Change Type</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Type" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="new">New</SelectItem>
+                                  <SelectItem value="improvement">Improvement</SelectItem>
+                                  <SelectItem value="fix">Fix</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
-                           </FormItem>
-                        )}
-                      />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`changes.${index}.description`}
+                          render={({ field }) => (
+                            <FormItem className="md:col-span-4">
+                                <FormLabel className="sr-only">Description</FormLabel>
+                                <FormControl>
+                                  <Textarea placeholder="Describe the change..." {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        className="mt-1"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => remove(index)}
-                       className="mt-1"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => append({ type: 'improvement', description: '' })}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Change
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="mt-4"
-                onClick={() => append({ type: 'improvement', description: '' })}
-              >
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Change
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button type="submit" disabled={form.formState.isSubmitting || !selectedModule}>
+                {form.formState.isSubmitting ? "Saving..." : "Save Version"}
               </Button>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Saving..." : "Save Version"}
-            </Button>
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+
+      {selectedModule && (
+        <Card>
+            <CardHeader>
+                <CardTitle>Existing Versions for {selectedModule.name}</CardTitle>
+                <CardDescription>View, edit, or delete existing versions for this module.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {selectedModule.versions.length > 0 ? (
+                <Accordion type="multiple" className="w-full">
+                    {selectedModule.versions.map((version) => (
+                        <AccordionItem key={version.version} value={`item-${version.version}`}>
+                            <div className="flex items-center justify-between w-full">
+                                <AccordionTrigger className="flex-1">
+                                    <div className="flex flex-col items-start">
+                                        <span className="font-semibold">v{version.version}</span>
+                                        <span className="text-xs text-muted-foreground">{version.date}</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="mr-2">
+                                            <MoreHorizontal />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => handleOpenEditDialog(version)}>
+                                            <Pencil className="mr-2 h-4 w-4" /> Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleDeleteVersion(version.version)}>
+                                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <AccordionContent>
+                                <ul className="space-y-2 pl-2">
+                                    {version.changes.map((change, index) => (
+                                        <li key={index} className="flex items-start gap-3">
+                                            <div className="mt-1">
+                                                {versionIcons[change.type]}
+                                            </div>
+                                            <span className="text-sm">{change.description}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
+                ) : (
+                    <p className="text-muted-foreground text-center">No versions found for this module.</p>
+                )}
+            </CardContent>
+        </Card>
+      )}
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>Edit Version {editingVersion?.version}</DialogTitle>
+          </DialogHeader>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-6">
+                <FormField
+                    control={editForm.control}
+                    name="version"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Version Number</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <div>
+                    <FormLabel>Changes</FormLabel>
+                    <div className="space-y-4 mt-2">
+                        {editFields.map((field, index) => (
+                        <div key={field.id} className="flex items-start gap-4 p-4 border rounded-md">
+                           <div className="grid grid-cols-1 md:grid-cols-6 gap-4 flex-1">
+                             <FormField
+                                control={editForm.control}
+                                name={`changes.${index}.type`}
+                                render={({ field }) => (
+                                <FormItem className="md:col-span-2">
+                                    <FormLabel className="sr-only">Change Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="new">New</SelectItem>
+                                            <SelectItem value="improvement">Improvement</SelectItem>
+                                            <SelectItem value="fix">Fix</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={editForm.control}
+                                name={`changes.${index}.description`}
+                                render={({ field }) => (
+                                <FormItem className="md:col-span-4">
+                                     <FormLabel className="sr-only">Description</FormLabel>
+                                    <FormControl><Textarea {...field} /></FormControl>
+                                </FormItem>
+                                )}
+                            />
+                           </div>
+                           <Button type="button" variant="destructive" size="icon" onClick={() => editRemove(index)} className="mt-1">
+                               <Trash2 className="h-4 w-4" />
+                           </Button>
+                        </div>
+                        ))}
+                    </div>
+                     <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => editAppend({ type: 'improvement', description: '' })}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Change
+                    </Button>
+                </div>
+              <DialogFooter>
+                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                <Button type="submit">Save Changes</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
+
+    
