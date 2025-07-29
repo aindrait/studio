@@ -42,31 +42,23 @@ export default function Home() {
   const [selectedModule, setSelectedModule] = React.useState<Module | null>(null);
   const { toast } = useToast();
 
-  const fetchModules = React.useCallback(async () => {
-    try {
-      const fetchedModules = await getModules();
-      setModules(fetchedModules);
-      
-      if (!selectedModule && fetchedModules.length > 0) {
-        setSelectedModule(fetchedModules[0]);
-      } else if (selectedModule) {
-        // If there's a selected module, refresh its data from the new fetch
-        const refreshedModule = fetchedModules.find(m => m.id === selectedModule.id);
-        setSelectedModule(refreshedModule || (fetchedModules.length > 0 ? fetchedModules[0] : null));
-      }
-
-    } catch (error) {
-       toast({
-            variant: "destructive",
-            title: "Failed to refresh modules",
-        });
-    }
-  }, [toast, selectedModule]);
-
-
   React.useEffect(() => {
-    fetchModules();
-  }, [fetchModules]);
+    async function initialFetch() {
+      try {
+        const fetchedModules = await getModules();
+        setModules(fetchedModules);
+        if (fetchedModules.length > 0) {
+          setSelectedModule(fetchedModules[0]);
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Failed to fetch modules",
+        });
+      }
+    }
+    initialFetch();
+  }, [toast]);
 
 
   const filteredModules = React.useMemo(() => {
