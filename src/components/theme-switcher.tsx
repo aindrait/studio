@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { useTheme } from "@/components/theme-provider"
+import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -10,15 +10,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
-  DropdownMenuSubTrigger
 } from "@/components/ui/dropdown-menu"
-import { Moon, Sun, Palette } from "lucide-react"
+import { Moon, Sun } from "lucide-react"
 
 export function ThemeSwitcher() {
-  const { setTheme, setVariant } = useTheme()
+  const { setTheme } = useTheme()
 
   return (
     <DropdownMenu>
@@ -30,47 +26,15 @@ export function ThemeSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-                <Sun className="mr-2 h-4 w-4" />
-                <span>Mode</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => setTheme("light")}>
-                        Light
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("dark")}>
-                        Dark
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("system")}>
-                        System
-                    </DropdownMenuItem>
-                </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-        </DropdownMenuSub>
-         <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-                <Palette className="mr-2 h-4 w-4" />
-                <span>Color Scheme</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => setVariant("default")}>
-                        Default
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setVariant("zinc")}>
-                        Zinc
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setVariant("stone")}>
-                        Stone
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setVariant("rose")}>
-                        Rose
-                    </DropdownMenuItem>
-                </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-        </DropdownMenuSub>
+        <DropdownMenuItem onClick={() => setTheme("light")}>
+            Light
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("dark")}>
+            Dark
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setTheme("system")}>
+            System
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
