@@ -71,7 +71,7 @@ export default function LoginPage() {
             <div className="flex justify-center items-center mb-4">
                 <Logo className="h-8 w-8 text-primary" />
             </div>
-          <CardTitle className="font-headline text-2xl">MDS Manual Admin</CardTitle>
+          <CardTitle className="font-headline text-2xl">ModuleMaestro Admin</CardTitle>
           <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
         </CardHeader>
         <CardContent>
