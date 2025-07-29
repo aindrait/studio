@@ -14,7 +14,7 @@ export function useTheme() {
   const [variant, setVariant] = React.useState<string>('default');
 
   React.useEffect(() => {
-    // On mount, read the variant from localStorage
+    // Saat komponen dimuat, baca varian dari localStorage
     const storedVariant = localStorage.getItem('theme-variant');
     if (storedVariant) {
       setVariant(storedVariant);
@@ -24,11 +24,11 @@ export function useTheme() {
   React.useEffect(() => {
     const rootEl = document.documentElement;
     
-    // Remove any existing theme- variant classes
+    // Hapus semua kelas varian tema yang sudah ada
     const themeClasses = Array.from(rootEl.classList).filter(c => c.startsWith('theme-'));
     rootEl.classList.remove(...themeClasses);
 
-    // Add the new theme variant class if it's not 'default'
+    // Tambahkan kelas varian tema yang baru jika bukan 'default'
     if (variant !== 'default') {
       rootEl.classList.add(`theme-${variant}`);
       localStorage.setItem('theme-variant', variant);
@@ -39,9 +39,9 @@ export function useTheme() {
 
   return { 
     ...rest, 
-    theme, // This will be 'light', 'dark', or 'system'
-    setTheme, // Function to change base theme
-    variant, // This will be 'default', 'zinc', etc.
-    setVariant // Function to change the color variant
+    theme, // Ini akan menjadi 'light', 'dark', atau 'system'
+    setTheme, // Fungsi untuk mengubah tema dasar
+    variant, // Ini akan menjadi 'default', 'zinc', dll.
+    setVariant // Fungsi untuk mengubah varian warna
   };
 }
