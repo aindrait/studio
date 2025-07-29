@@ -198,7 +198,7 @@ export default function EditModulePage() {
                                     </FormControl>
                                     <SelectContent>
                                         {categories.map(cat => (
-                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                            <SelectItem key={cat.name} value={cat.name}>{cat.name}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>

@@ -1,9 +1,9 @@
-
 {
   "categories": [
-    "Core Systems",
-    "User Interface",
-    "Data Management"
+    { "name": "Core Systems" },
+    { "name": "User Interface" },
+    { "name": "Data Management" },
+    { "name": "Test Module" }
   ],
   "modules": [
     {

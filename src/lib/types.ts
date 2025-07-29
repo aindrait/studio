@@ -22,4 +22,6 @@ export type Module = {
   versions: Version[];
 };
 
-export type Category = string;
+export type Category = {
+  name: string;
+};

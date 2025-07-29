@@ -29,15 +29,16 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { type Module, type ModuleCategory } from "@/lib/types";
+import { type Module, type Category } from "@/lib/types";
 import { DocumentationViewer } from "@/components/documentation-viewer";
 import { Logo } from "@/components/icons";
 import Link from "next/link";
-import { getModules } from "@/ai/flows/module-crud";
+import { getModules, getCategories } from "@/ai/flows/module-crud";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [modules, setModules] = React.useState<Module[]>([]);
+  const [categories, setCategories] = React.useState<Category[]>([]);
   const [search, setSearch] = React.useState("");
   const [selectedModule, setSelectedModule] = React.useState<Module | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -47,18 +48,21 @@ export default function Home() {
     async function initialFetch() {
       setLoading(true);
       try {
-        const fetchedModules = await getModules();
+        const [fetchedModules, fetchedCategories] = await Promise.all([
+          getModules(),
+          getCategories(),
+        ]);
+
         setModules(fetchedModules);
+        setCategories(fetchedCategories);
+
         if (fetchedModules.length > 0) {
-          // Set initial selected module only if one isn't already selected
-          if (!selectedModule) {
-            setSelectedModule(fetchedModules[0]);
-          }
+          setSelectedModule(fetchedModules[0]);
         }
       } catch (error) {
         toast({
           variant: "destructive",
-          title: "Failed to fetch modules",
+          title: "Failed to fetch data",
         });
       } finally {
         setLoading(false);
@@ -89,8 +93,14 @@ export default function Home() {
       }
       acc[category].push(module);
       return acc;
-    }, {} as Record<ModuleCategory, Module[]>);
+    }, {} as Record<string, Module[]>);
   }, [filteredModules]);
+  
+  const visibleCategories = React.useMemo(() => {
+    const visibleCategoryNames = Object.keys(modulesByCategory);
+    return categories.filter(cat => visibleCategoryNames.includes(cat.name));
+  }, [categories, modulesByCategory]);
+
 
   return (
     <SidebarProvider>
@@ -120,23 +130,23 @@ export default function Home() {
             <Accordion
               type="multiple"
               className="w-full"
-              key={Object.keys(modulesByCategory).join('-')}
+              key={visibleCategories.map(c => c.name).join('-')}
             >
-              {Object.entries(modulesByCategory).map(([category, modules]) => (
+              {visibleCategories.map((category) => (
                 <AccordionItem
-                  key={category}
-                  value={category}
+                  key={category.name}
+                  value={category.name}
                   className="border-none"
                 >
                   <AccordionTrigger className="px-2 py-1 text-sm font-medium hover:no-underline hover:bg-accent rounded-md">
                     <div className="flex items-center gap-2">
                       <LayoutGrid className="w-4 h-4" />
-                      <span>{category}</span>
+                      <span>{category.name}</span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-1">
                     <SidebarMenu className="pl-4">
-                      {modules.map((module) => (
+                      {modulesByCategory[category.name].map((module) => (
                         <SidebarMenuItem key={module.id}>
                           <SidebarMenuButton
                             onClick={() => setSelectedModule(module)}

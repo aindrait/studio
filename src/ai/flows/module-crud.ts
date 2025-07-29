@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,10 +11,14 @@ import { Module, Category, Version } from '@/lib/types';
 import fs from 'fs/promises';
 import path from 'path';
 
+const CategorySchema = z.object({
+  name: z.string(),
+});
+
 // Define the structure of our database
 const DbSchema = z.object({
   modules: z.array(z.any()), // Using any for now to avoid schema duplication, will be validated on use
-  categories: z.array(z.string()),
+  categories: z.array(CategorySchema),
 });
 
 type Db = z.infer<typeof DbSchema>;
@@ -24,13 +29,15 @@ const dbPath = path.join(process.cwd(), 'src', 'lib', 'db.json');
 async function readDb(): Promise<Db> {
   try {
     const fileContent = await fs.readFile(dbPath, 'utf-8');
-    return JSON.parse(fileContent);
+    // Add validation here to ensure the data matches the schema
+    const jsonData = JSON.parse(fileContent);
+    return DbSchema.parse(jsonData);
   } catch (error) {
     // If the file doesn't exist or is empty, return a default structure
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
       return { modules: [], categories: [] };
     }
-    console.error("Error reading database file:", error);
+    console.error("Error reading or parsing database file:", error);
     throw new Error("Could not read from database.");
   }
 }
@@ -38,7 +45,9 @@ async function readDb(): Promise<Db> {
 // Helper function to write to the database file
 async function writeDb(data: Db): Promise<void> {
   try {
-    await fs.writeFile(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+    // Also validate data before writing
+    const validatedData = DbSchema.parse(data);
+    await fs.writeFile(dbPath, JSON.stringify(validatedData, null, 2), 'utf-8');
   } catch (error) {
     console.error("Error writing to database file:", error);
     throw new Error("Could not write to database.");
@@ -142,7 +151,7 @@ export const deleteModuleFlow = ai.defineFlow(
 export const getCategoriesFlow = ai.defineFlow({
     name: 'getCategoriesFlow',
     inputSchema: z.void(),
-    outputSchema: z.array(z.string()),
+    outputSchema: z.array(CategorySchema),
 }, async () => {
     const db = await readDb();
     return db.categories;
@@ -150,12 +159,12 @@ export const getCategoriesFlow = ai.defineFlow({
 
 export const createCategoryFlow = ai.defineFlow({
     name: 'createCategoryFlow',
-    inputSchema: z.string(),
-    outputSchema: z.string(),
+    inputSchema: CategorySchema,
+    outputSchema: CategorySchema,
 }, async (category) => {
     const db = await readDb();
-    if (db.categories.includes(category)) {
-        throw new Error(`Category "${category}" already exists.`);
+    if (db.categories.some(c => c.name === category.name)) {
+        throw new Error(`Category "${category.name}" already exists.`);
     }
     db.categories.push(category);
     await writeDb(db);
@@ -168,14 +177,14 @@ export const updateCategoryFlow = ai.defineFlow({
     outputSchema: z.string(),
 }, async ({ oldName, newName }) => {
     const db = await readDb();
-    const index = db.categories.indexOf(oldName);
+    const index = db.categories.findIndex(c => c.name === oldName);
     if (index === -1) {
         throw new Error(`Category "${oldName}" not found.`);
     }
-    if (db.categories.includes(newName) && oldName !== newName) {
+    if (db.categories.some(c => c.name === newName) && oldName !== newName) {
       throw new Error(`Category "${newName}" already exists.`);
     }
-    db.categories[index] = newName;
+    db.categories[index].name = newName;
     // also update modules
     db.modules.forEach(module => {
         if (module.category === oldName) {
@@ -197,13 +206,24 @@ export const deleteCategoryFlow = ai.defineFlow({
     if (isUsed) {
         throw new Error(`Category "${name}" is in use and cannot be deleted.`);
     }
-    const index = db.categories.indexOf(name);
+    const index = db.categories.findIndex(c => c.name === name);
     if (index !== -1) {
         db.categories.splice(index, 1);
         await writeDb(db);
         return true;
     }
     return false;
+});
+
+export const reorderCategoriesFlow = ai.defineFlow({
+    name: 'reorderCategoriesFlow',
+    inputSchema: z.array(CategorySchema),
+    outputSchema: z.boolean(),
+}, async (categories) => {
+    const db = await readDb();
+    db.categories = categories;
+    await writeDb(db);
+    return true;
 });
 
 
@@ -232,14 +252,18 @@ export async function getCategories(): Promise<Category[]> {
     return await getCategoriesFlow();
 }
 
-export async function createCategory(name: string): Promise<Category> {
-    return await createCategoryFlow(name);
+export async function createCategory(category: Category): Promise<Category> {
+    return await createCategoryFlow(category);
 }
 
-export async function updateCategory(oldName: string, newName: string): Promise<Category> {
+export async function updateCategory(oldName: string, newName: string): Promise<string> {
     return await updateCategoryFlow({ oldName, newName });
 }
 
 export async function deleteCategory(name: string): Promise<boolean> {
     return await deleteCategoryFlow(name);
+}
+
+export async function reorderCategories(categories: Category[]): Promise<boolean> {
+    return await reorderCategoriesFlow(categories);
 }

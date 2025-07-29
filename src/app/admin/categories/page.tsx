@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from "@/components/ui/card";
 import {
   Table,
@@ -39,19 +40,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Pencil, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getCategories, createCategory, updateCategory, deleteCategory } from "@/ai/flows/module-crud";
+import { getCategories, createCategory, updateCategory, deleteCategory, reorderCategories } from "@/ai/flows/module-crud";
 import { Category } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
+import { arrayMove } from "@/lib/utils";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [initialOrder, setInitialOrder] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -60,12 +63,16 @@ export default function CategoriesPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const [isDirty, setIsDirty] = useState(false);
+
 
   async function fetchCategories() {
     try {
       setLoading(true);
       const fetchedCategories = await getCategories();
       setCategories(fetchedCategories);
+      setInitialOrder(fetchedCategories);
+      setIsDirty(false);
     } catch (error) {
       toast({
         variant: "destructive",
@@ -80,12 +87,17 @@ export default function CategoriesPage() {
   useEffect(() => {
     fetchCategories();
   }, []);
+  
+  useEffect(() => {
+      const isOrderChanged = JSON.stringify(categories) !== JSON.stringify(initialOrder);
+      setIsDirty(isOrderChanged);
+  }, [categories, initialOrder]);
 
   const handleOpenDialog = (category: Category | null = null) => {
     if (category) {
       setIsEditing(true);
       setCurrentCategory(category);
-      setCategoryName(category);
+      setCategoryName(category.name);
     } else {
       setIsEditing(false);
       setCurrentCategory(null);
@@ -106,10 +118,10 @@ export default function CategoriesPage() {
     
     try {
       if (isEditing && currentCategory) {
-        await updateCategory(currentCategory, categoryName);
+        await updateCategory(currentCategory.name, categoryName);
         toast({ title: "Category Updated" });
       } else {
-        await createCategory(categoryName);
+        await createCategory({name: categoryName});
         toast({ title: "Category Created" });
       }
       fetchCategories();
@@ -149,6 +161,29 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleReorder = (index: number, direction: 'up' | 'down') => {
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= categories.length) return;
+      const reorderedCategories = arrayMove(categories, index, newIndex);
+      setCategories(reorderedCategories);
+  };
+
+  const handleSaveOrder = async () => {
+      try {
+          await reorderCategories(categories);
+          toast({ title: "Category Order Saved" });
+          setInitialOrder(categories);
+          setIsDirty(false);
+      } catch (error) {
+          toast({
+              variant: "destructive",
+              title: "Failed to save order",
+              description: "Could not update the category order."
+          });
+      }
+  };
+
+
   return (
     <>
       <Card>
@@ -157,7 +192,7 @@ export default function CategoriesPage() {
             <div>
               <CardTitle className="font-headline">Categories</CardTitle>
               <CardDescription>
-                Manage your documentation categories.
+                Manage and reorder your documentation categories.
               </CardDescription>
             </div>
             <Button onClick={() => handleOpenDialog()}>
@@ -174,13 +209,24 @@ export default function CategoriesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
+                  <TableHead className="w-[120px]">Reorder</TableHead>
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {categories.map((category) => (
-                  <TableRow key={category}>
-                    <TableCell className="font-medium">{category}</TableCell>
+                {categories.map((category, index) => (
+                  <TableRow key={category.name}>
+                    <TableCell className="font-medium">{category.name}</TableCell>
+                     <TableCell>
+                        <div className="flex gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => handleReorder(index, 'up')} disabled={index === 0}>
+                                <ArrowUp className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleReorder(index, 'down')} disabled={index === categories.length - 1}>
+                                <ArrowDown className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -192,7 +238,7 @@ export default function CategoriesPage() {
                           <DropdownMenuItem onClick={() => handleOpenDialog(category)}>
                             <Pencil className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => confirmDelete(category)}>
+                          <DropdownMenuItem onClick={() => confirmDelete(category.name)}>
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -204,6 +250,11 @@ export default function CategoriesPage() {
             </Table>
           )}
         </CardContent>
+         {isDirty && (
+            <CardFooter className="flex justify-end">
+                <Button onClick={handleSaveOrder}>Save Order</Button>
+            </CardFooter>
+        )}
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
