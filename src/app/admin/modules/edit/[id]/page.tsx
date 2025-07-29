@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 
 import { Button } from '@/components/ui/button';
@@ -20,8 +19,7 @@ import { getModule, updateModule, getCategories } from '@/ai/flows/module-crud';
 import type { Module, Category } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import { QuillEditor } from '@/components/admin/quill-editor';
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -225,14 +223,8 @@ export default function EditModulePage() {
                             <FormItem>
                                 <FormLabel>Module Manual Content</FormLabel>
                                 <FormControl>
-                                    <div className="h-96 pb-12">
-                                      <ReactQuill
-                                          value={field.value}
-                                          onChange={field.onChange}
-                                          theme="snow"
-                                          placeholder="Write your module manual here..."
-                                          className="h-full"
-                                      />
+                                   <div className="h-96 pb-12">
+                                        <QuillEditor {...field} />
                                     </div>
                                 </FormControl>
                                 <FormMessage />
