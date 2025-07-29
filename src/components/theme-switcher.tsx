@@ -11,9 +11,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
   DropdownMenuPortal,
+  DropdownMenuSubTrigger
 } from "@/components/ui/dropdown-menu"
 import { Moon, Sun, Palette } from "lucide-react"
 

@@ -10,7 +10,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 
 export function useTheme() {
-  const { theme: baseTheme, setTheme: setBaseTheme, ...rest } = useNextTheme();
+  const { theme, setTheme, ...rest } = useNextTheme();
   const [variant, setVariant] = React.useState<string>('default');
 
   React.useEffect(() => {
@@ -39,8 +39,8 @@ export function useTheme() {
 
   return { 
     ...rest, 
-    theme: baseTheme, // This will be 'light', 'dark', or 'system'
-    setTheme: setBaseTheme, // Function to change base theme
+    theme, // This will be 'light', 'dark', or 'system'
+    setTheme, // Function to change base theme
     variant, // This will be 'default', 'zinc', etc.
     setVariant // Function to change the color variant
   };
