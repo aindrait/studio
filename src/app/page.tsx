@@ -135,7 +135,7 @@ export default function Home() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pt-1">
-                    <SidebarMenu>
+                    <SidebarMenu className="pl-4">
                       {modules.map((module) => (
                         <SidebarMenuItem key={module.id}>
                           <SidebarMenuButton
