@@ -47,9 +47,5 @@ export async function getSession() {
   const decryptedSession = await decrypt(session);
   if (!decryptedSession) return null;
 
-  // Refresh the session so it doesn't expire
-  const expires = new Date(Date.now() + 60 * 60 * 1000);
-  cookies().set('session', session, { expires, httpOnly: true });
-
   return decryptedSession.user;
 }
