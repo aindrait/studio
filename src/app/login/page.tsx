@@ -48,7 +48,6 @@ export default function LoginPage() {
       if (user) {
         toast({ title: "Login Successful", description: `Welcome back, ${user.username}!` });
         const callbackUrl = searchParams.get('callbackUrl');
-        // Use window.location.href for a full page reload to ensure middleware runs
         window.location.href = callbackUrl || '/admin';
       } else {
         throw new Error("Invalid username or password.");
@@ -71,7 +70,7 @@ export default function LoginPage() {
             <div className="flex justify-center items-center mb-4">
                 <Logo className="h-8 w-8 text-primary" />
             </div>
-          <CardTitle className="font-headline text-2xl">ModuleMaestro Admin</CardTitle>
+          <CardTitle className="font-headline text-2xl">MDS Manual Admin</CardTitle>
           <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
         </CardHeader>
         <CardContent>
