@@ -6,20 +6,25 @@ import { type ThemeProviderProps } from "next-themes/dist/types"
 
 type Variant = "default" | "zinc" | "stone" | "rose"
 
-type ThemeContextType = {
+type CustomThemeContextType = {
   theme: string | undefined;
   setTheme: (theme: string) => void;
   variant: Variant;
   setVariant: (variant: Variant) => void;
 };
 
-const CustomThemeContext = React.createContext<ThemeContextType | undefined>(undefined);
+
+const CustomThemeContext = React.createContext<CustomThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+  return (
+    <NextThemesProvider {...props}>
+        {children}
+    </NextThemesProvider>
+  )
 }
 
-export const CustomThemeProvider = ({ children }: { children: React.ReactNode }) => {
+export function CustomThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useNextTheme();
   const [variant, setVariant] = React.useState<Variant>("default");
 
