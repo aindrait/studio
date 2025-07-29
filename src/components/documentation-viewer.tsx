@@ -1,5 +1,7 @@
+
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -35,6 +37,12 @@ const versionIcons = {
 };
 
 export function DocumentationViewer({ module }: DocumentationViewerProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   if (!module) {
     return (
       <Card className="flex flex-col items-center justify-center text-center p-8 h-[calc(100vh-10rem)]">
@@ -89,10 +97,12 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                 />
               </div>
             )}
-            <div
-              className="prose prose-sm max-w-none text-foreground"
-              dangerouslySetInnerHTML={{ __html: module.content }}
-            />
+            {isClient && (
+              <div
+                className="prose prose-sm max-w-none text-foreground"
+                dangerouslySetInnerHTML={{ __html: module.content }}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
