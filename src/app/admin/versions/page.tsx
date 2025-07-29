@@ -14,12 +14,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { getModules, updateModule } from '@/ai/flows/module-crud';
+import { getModules, updateModule, getModule } from '@/ai/flows/module-crud';
 import type { Module, Version } from '@/lib/types';
 import { PlusCircle, Trash2, Pencil, MoreHorizontal, ArrowUpCircle, Wrench } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 
 
@@ -49,6 +59,9 @@ export default function VersionsPage() {
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingVersion, setEditingVersion] = useState<Version | null>(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [versionToDelete, setVersionToDelete] = useState<string | null>(null);
+
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -169,11 +182,15 @@ export default function VersionsPage() {
     }
   }
 
-  const handleDeleteVersion = async (versionNumber: string) => {
-    if (!selectedModule) return;
-    if (!confirm(`Are you sure you want to delete version ${versionNumber}?`)) return;
+  const confirmDeleteVersion = (versionNumber: string) => {
+    setVersionToDelete(versionNumber);
+    setIsAlertOpen(true);
+  };
+  
+  const handleDeleteVersion = async () => {
+    if (!selectedModule || !versionToDelete) return;
 
-    const updatedVersions = selectedModule.versions.filter(v => v.version !== versionNumber);
+    const updatedVersions = selectedModule.versions.filter(v => v.version !== versionToDelete);
     const updatedModule = { ...selectedModule, versions: updatedVersions };
 
     try {
@@ -184,6 +201,9 @@ export default function VersionsPage() {
       setSelectedModule(reloadedModule || null);
     } catch (error) {
       toast({ variant: "destructive", title: "Deletion Failed", description: "Could not delete the version." });
+    } finally {
+        setIsAlertOpen(false);
+        setVersionToDelete(null);
     }
   };
 
@@ -337,7 +357,7 @@ export default function VersionsPage() {
                                         <DropdownMenuItem onClick={() => handleOpenEditDialog(version)}>
                                             <Pencil className="mr-2 h-4 w-4" /> Edit
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleDeleteVersion(version.version)}>
+                                        <DropdownMenuItem onClick={() => confirmDeleteVersion(version.version)}>
                                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -435,6 +455,22 @@ export default function VersionsPage() {
           </Form>
         </DialogContent>
       </Dialog>
+      
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete version
+                      &quot;{versionToDelete}&quot; from {selectedModule?.name}.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteVersion}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -27,6 +27,16 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
@@ -47,6 +57,8 @@ export default function CategoriesPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
   const [categoryName, setCategoryName] = useState("");
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
   async function fetchCategories() {
@@ -110,22 +122,30 @@ export default function CategoriesPage() {
       });
     }
   };
+  
+  const confirmDelete = (name: string) => {
+    setCategoryToDelete(name);
+    setIsAlertOpen(true);
+  };
 
-  const handleDelete = async (name: string) => {
-    if (confirm("Are you sure you want to delete this category?")) {
-      try {
-        await deleteCategory(name);
-        toast({
-          title: "Category Deleted",
-        });
-        fetchCategories();
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Deletion Failed",
-          description: error.message || "Could not delete the category.",
-        });
-      }
+  const handleDelete = async () => {
+    if (!categoryToDelete) return;
+
+    try {
+      await deleteCategory(categoryToDelete);
+      toast({
+        title: "Category Deleted",
+      });
+      fetchCategories();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Deletion Failed",
+        description: error.message || "Could not delete the category. It might be in use by a module.",
+      });
+    } finally {
+      setIsAlertOpen(false);
+      setCategoryToDelete(null);
     }
   };
 
@@ -172,7 +192,7 @@ export default function CategoriesPage() {
                           <DropdownMenuItem onClick={() => handleOpenDialog(category)}>
                             <Pencil className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(category)}>
+                          <DropdownMenuItem onClick={() => confirmDelete(category)}>
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -212,6 +232,22 @@ export default function CategoriesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the category
+                      &quot;{categoryToDelete}&quot;.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

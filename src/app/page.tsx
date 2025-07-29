@@ -40,25 +40,32 @@ export default function Home() {
   const [modules, setModules] = React.useState<Module[]>([]);
   const [search, setSearch] = React.useState("");
   const [selectedModule, setSelectedModule] = React.useState<Module | null>(null);
+  const [loading, setLoading] = React.useState(true);
   const { toast } = useToast();
 
   React.useEffect(() => {
     async function initialFetch() {
+      setLoading(true);
       try {
         const fetchedModules = await getModules();
         setModules(fetchedModules);
         if (fetchedModules.length > 0) {
-          setSelectedModule(fetchedModules[0]);
+          // Set initial selected module only if one isn't already selected
+          if (!selectedModule) {
+            setSelectedModule(fetchedModules[0]);
+          }
         }
       } catch (error) {
         toast({
           variant: "destructive",
           title: "Failed to fetch modules",
         });
+      } finally {
+        setLoading(false);
       }
     }
     initialFetch();
-  }, [toast]);
+  }, [toast]); // Removed selectedModule from dependency array
 
 
   const filteredModules = React.useMemo(() => {
@@ -106,11 +113,14 @@ export default function Home() {
             </div>
           </SidebarGroup>
           <SidebarMenu>
+             {loading ? (
+              <p className="p-2 text-sm text-muted-foreground">Loading...</p>
+            ) : (
             <Accordion
               type="multiple"
               className="w-full"
               defaultValue={Object.keys(modulesByCategory)}
-              key={Object.keys(modulesByCategory).join('-')} // Add key to force re-render
+              key={Object.keys(modulesByCategory).join('-')} // Force re-render on filter change
             >
               {Object.entries(modulesByCategory).map(([category, modules]) => (
                 <AccordionItem
@@ -143,6 +153,7 @@ export default function Home() {
                 </AccordionItem>
               ))}
             </Accordion>
+            )}
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
