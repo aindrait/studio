@@ -180,10 +180,10 @@ export default function VersionsPage() {
       await updateModule(updatedModule);
       toast({ title: "Version Deleted" });
       await fetchModulesData();
-      const updatedMod = await getModules().then(mods => mods.find(m => m.id === selectedModule.id));
-      setSelectedModule(updatedMod || null);
+      const reloadedModule = await getModule(selectedModule.id);
+      setSelectedModule(reloadedModule || null);
     } catch (error) {
-      toast({ variant: "destructive", title: "Deletion Failed" });
+      toast({ variant: "destructive", title: "Deletion Failed", description: "Could not delete the version." });
     }
   };
 
