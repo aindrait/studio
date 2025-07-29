@@ -15,15 +15,17 @@ import { LogOut } from 'lucide-react';
 import { logout } from '@/lib/session';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
+import type { AdminUser } from "@/lib/types";
 
-export function UserNav({ user }: { user: { username: string } }) {
+export function UserNav({ user }: { user: Omit<AdminUser, 'password'> }) {
     const router = useRouter();
     const { toast } = useToast();
 
     const handleLogout = async () => {
         await logout();
         toast({ title: "Logged Out", description: "You have been successfully logged out."});
-        router.push('/login');
+        // Full page reload to clear session state completely
+        window.location.href = '/login';
     }
 
   return (
@@ -39,8 +41,8 @@ export function UserNav({ user }: { user: { username: string } }) {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{user.username}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              Administrator
+            <p className="text-xs leading-none text-muted-foreground capitalize">
+              {user.role}
             </p>
           </div>
         </DropdownMenuLabel>

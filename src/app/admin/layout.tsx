@@ -18,6 +18,8 @@ export default async function AdminLayout({
   if (!session) {
     redirect('/login');
   }
+  
+  const isAdmin = session.role === 'admin';
 
   return (
     <SidebarProvider>
@@ -41,30 +43,44 @@ export default async function AdminLayout({
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin/categories">
-                    <Folder />
-                    Categories
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin/versions">
-                    <GitCommitHorizontal />
-                    Versions
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/admin/users">
-                    <Users />
-                    Users
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {isAdmin && (
+                <>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/admin/categories">
+                        <Folder />
+                        Categories
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/admin/versions">
+                        <GitCommitHorizontal />
+                        Versions
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/admin/users">
+                        <Users />
+                        Users
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </>
+              )}
+               {!isAdmin && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/admin/versions">
+                        <GitCommitHorizontal />
+                        Versions
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+               )}
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>

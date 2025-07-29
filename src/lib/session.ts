@@ -1,8 +1,10 @@
+
 'use server';
 
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import type { AdminUser } from './types';
 
 const secretKey = process.env.SESSION_SECRET || 'fallback-secret-key-for-development';
 const key = new TextEncoder().encode(secretKey);
@@ -28,7 +30,7 @@ export async function decrypt(input: string): Promise<any> {
   }
 }
 
-export async function login(user: { username: string }) {
+export async function login(user: Omit<AdminUser, 'password'>) {
   // Create the session
   const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
   const session = await encrypt({ user, expires });
@@ -42,7 +44,7 @@ export async function logout() {
   cookies().set(COOKIE_NAME, '', { expires: new Date(0) });
 }
 
-export async function getSession() {
+export async function getSession(): Promise<Omit<AdminUser, 'password'> | null> {
   const session = cookies().get(COOKIE_NAME)?.value;
   if (!session) return null;
   const decryptedSession = await decrypt(session);

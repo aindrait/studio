@@ -10,7 +10,7 @@ import { z } from 'zod';
 import { Module, Category, Version, AdminUser } from '@/lib/types';
 import fs from 'fs/promises';
 import path from 'path';
-import { login } from '@/lib/session';
+import { login, getSession } from '@/lib/session';
 
 
 const CategorySchema = z.object({
@@ -69,6 +69,14 @@ async function writeDb(data: Db): Promise<void> {
   }
 }
 
+// Helper to check for admin role
+async function ensureAdmin() {
+    const session = await getSession();
+    if (!session || session.role !== 'admin') {
+        throw new Error('Unauthorized: Admin role required.');
+    }
+}
+
 
 const ModuleSchema = z.object({
   id: z.string(),
@@ -98,9 +106,9 @@ export const loginUserFlow = ai.defineFlow({
     const db = await readDb();
     const user = db.users.find(u => u.username === username && u.password === password);
     if (user) {
-        await login({ username: user.username });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;
+        await login(userWithoutPassword);
         return userWithoutPassword;
     }
     return undefined;
@@ -111,6 +119,7 @@ export const getAdminUsersFlow = ai.defineFlow({
     inputSchema: z.void(),
     outputSchema: z.array(AdminUserSchema.omit({ password: true })),
 }, async () => {
+    await ensureAdmin();
     const db = await readDb();
     return db.users.map(u => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -124,6 +133,7 @@ export const createAdminUserFlow = ai.defineFlow({
     inputSchema: CreateAdminUserSchema,
     outputSchema: AdminUserSchema.omit({ password: true }),
 }, async (newUser) => {
+    await ensureAdmin();
     const db = await readDb();
     if (db.users.some(u => u.username === newUser.username)) {
         throw new Error('Username already exists.');
@@ -141,6 +151,7 @@ export const updateAdminUserFlow = ai.defineFlow({
     inputSchema: AdminUserSchema,
     outputSchema: AdminUserSchema.omit({ password: true }).optional(),
 }, async (userData) => {
+    await ensureAdmin();
     const db = await readDb();
     const index = db.users.findIndex(u => u.id === userData.id);
     if (index !== -1) {
@@ -161,6 +172,7 @@ export const deleteAdminUserFlow = ai.defineFlow({
     inputSchema: z.string(), // user id
     outputSchema: z.boolean(),
 }, async (id) => {
+    await ensureAdmin();
     const db = await readDb();
     if (id === 'user-root') {
         throw new Error('Cannot delete root admin user.');
@@ -264,6 +276,7 @@ export const createCategoryFlow = ai.defineFlow({
     inputSchema: CategorySchema,
     outputSchema: CategorySchema,
 }, async (category) => {
+    await ensureAdmin();
     const db = await readDb();
     if (db.categories.some(c => c.name === category.name)) {
         throw new Error(`Category "${category.name}" already exists.`);
@@ -278,6 +291,7 @@ export const updateCategoryFlow = ai.defineFlow({
     inputSchema: z.object({ oldName: z.string(), newName: z.string() }),
     outputSchema: z.string(),
 }, async ({ oldName, newName }) => {
+    await ensureAdmin();
     const db = await readDb();
     const index = db.categories.findIndex(c => c.name === oldName);
     if (index === -1) {
@@ -303,6 +317,7 @@ export const deleteCategoryFlow = ai.defineFlow({
     inputSchema: z.string(),
     outputSchema: z.boolean(),
 }, async (name) => {
+    await ensureAdmin();
     const db = await readDb();
     const isUsed = db.modules.some(m => m.category === name);
     if (isUsed) {
@@ -322,6 +337,7 @@ export const reorderCategoriesFlow = ai.defineFlow({
     inputSchema: z.array(CategorySchema),
     outputSchema: z.boolean(),
 }, async (categories) => {
+    await ensureAdmin();
     const db = await readDb();
     db.categories = categories;
     await writeDb(db);

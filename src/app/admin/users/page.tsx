@@ -60,6 +60,7 @@ import { getAdminUsers, createAdminUser, updateAdminUser, deleteAdminUser } from
 import { AdminUser } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useSession } from "@/lib/session-client";
 
 const userSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters."),
@@ -73,6 +74,7 @@ const editUserSchema = userSchema.extend({
 
 
 export default function UsersPage() {
+  const { session, loading: sessionLoading } = useSession();
   const [users, setUsers] = useState<Omit<AdminUser, 'password'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -81,6 +83,8 @@ export default function UsersPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<Omit<AdminUser, 'password'> | null>(null);
   const { toast } = useToast();
+
+  const isEditor = session?.role === 'editor';
 
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
@@ -105,21 +109,29 @@ export default function UsersPage() {
       setLoading(true);
       const fetchedUsers = await getAdminUsers();
       setUsers(fetchedUsers);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Failed to fetch users",
+        description: error.message,
       });
+       if (error.message.includes('Unauthorized')) {
+          setUsers([]);
+       }
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (!isEditor) {
+        fetchUsers();
+    }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditor]);
 
   const handleOpenDialog = (user: Omit<AdminUser, 'password'> | null = null) => {
+    if (isEditor) return;
     if (user) {
       setIsEditing(true);
       setCurrentUser(user);
@@ -133,6 +145,7 @@ export default function UsersPage() {
   };
 
   const handleSave = async (values: z.infer<typeof userSchema>) => {
+    if (isEditor) return;
     try {
       if (isEditing && currentUser) {
          // In edit mode, password is optional. If not provided, it's not updated.
@@ -162,12 +175,13 @@ export default function UsersPage() {
   };
 
   const confirmDelete = (user: Omit<AdminUser, 'password'>) => {
+    if (isEditor) return;
     setUserToDelete(user);
     setIsAlertOpen(true);
   };
 
   const handleDelete = async () => {
-    if (!userToDelete) return;
+    if (!userToDelete || isEditor) return;
     if (userToDelete.id === "user-root") {
         toast({ variant: "destructive", title: "Cannot delete root admin."});
         setIsAlertOpen(false);
@@ -191,7 +205,21 @@ export default function UsersPage() {
   
 
   const DialogForm = isEditing ? editForm : form;
-  const schema = isEditing ? editUserSchema : userSchema;
+  
+  if (sessionLoading) {
+      return <p>Loading...</p>
+  }
+  
+  if (isEditor) {
+      return (
+          <Card>
+              <CardHeader>
+                  <CardTitle>Access Denied</CardTitle>
+                  <CardDescription>You do not have permission to manage users.</CardDescription>
+              </CardHeader>
+          </Card>
+      )
+  }
   
   return (
     <>
@@ -204,7 +232,7 @@ export default function UsersPage() {
                 Manage administrator and editor accounts.
               </CardDescription>
             </div>
-            <Button onClick={() => handleOpenDialog()}>
+            <Button onClick={() => handleOpenDialog()} disabled={isEditor}>
               <PlusCircle className="mr-2" />
               New User
             </Button>
@@ -230,7 +258,7 @@ export default function UsersPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" disabled={isEditor}>
                             <MoreHorizontal />
                           </Button>
                         </DropdownMenuTrigger>

@@ -151,6 +151,12 @@
       "username": "admin",
       "password": "admin",
       "role": "admin"
+    },
+    {
+      "id": "user-1753786838240",
+      "username": "test",
+      "password": "tester",
+      "role": "editor"
     }
   ]
 }

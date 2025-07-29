@@ -51,8 +51,10 @@ import { getCategories, createCategory, updateCategory, deleteCategory, reorderC
 import { Category } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { arrayMove } from "@/lib/utils";
+import { useSession } from "@/lib/session-client";
 
 export default function CategoriesPage() {
+  const { session, loading: sessionLoading } = useSession();
   const [categories, setCategories] = useState<Category[]>([]);
   const [initialOrder, setInitialOrder] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +67,7 @@ export default function CategoriesPage() {
   const { toast } = useToast();
   const [isDirty, setIsDirty] = useState(false);
 
+  const isEditor = session?.role === 'editor';
 
   async function fetchCategories() {
     try {
@@ -86,6 +89,7 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchCategories();
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   useEffect(() => {
@@ -94,6 +98,7 @@ export default function CategoriesPage() {
   }, [categories, initialOrder]);
 
   const handleOpenDialog = (category: Category | null = null) => {
+    if (isEditor) return;
     if (category) {
       setIsEditing(true);
       setCurrentCategory(category);
@@ -107,6 +112,7 @@ export default function CategoriesPage() {
   };
 
   const handleSave = async () => {
+    if (isEditor) return;
     if (!categoryName.trim()) {
         toast({
             variant: "destructive",
@@ -136,12 +142,13 @@ export default function CategoriesPage() {
   };
   
   const confirmDelete = (name: string) => {
+    if (isEditor) return;
     setCategoryToDelete(name);
     setIsAlertOpen(true);
   };
 
   const handleDelete = async () => {
-    if (!categoryToDelete) return;
+    if (!categoryToDelete || isEditor) return;
 
     try {
       await deleteCategory(categoryToDelete);
@@ -162,6 +169,7 @@ export default function CategoriesPage() {
   };
 
   const handleReorder = (index: number, direction: 'up' | 'down') => {
+      if (isEditor) return;
       const newIndex = direction === 'up' ? index - 1 : index + 1;
       if (newIndex < 0 || newIndex >= categories.length) return;
       const reorderedCategories = arrayMove(categories, index, newIndex);
@@ -169,6 +177,7 @@ export default function CategoriesPage() {
   };
 
   const handleSaveOrder = async () => {
+      if (isEditor) return;
       try {
           await reorderCategories(categories);
           toast({ title: "Category Order Saved" });
@@ -183,6 +192,21 @@ export default function CategoriesPage() {
       }
   };
 
+  if (sessionLoading) {
+    return <p>Loading...</p>
+  }
+  
+  if (isEditor) {
+      return (
+          <Card>
+              <CardHeader>
+                  <CardTitle>Access Denied</CardTitle>
+                  <CardDescription>You do not have permission to manage categories.</CardDescription>
+              </CardHeader>
+          </Card>
+      )
+  }
+
 
   return (
     <>
@@ -195,7 +219,7 @@ export default function CategoriesPage() {
                 Manage and reorder your documentation categories.
               </CardDescription>
             </div>
-            <Button onClick={() => handleOpenDialog()}>
+            <Button onClick={() => handleOpenDialog()} disabled={isEditor}>
               <PlusCircle className="mr-2" />
               New Category
             </Button>
@@ -219,10 +243,10 @@ export default function CategoriesPage() {
                     <TableCell className="font-medium">{category.name}</TableCell>
                      <TableCell>
                         <div className="flex gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleReorder(index, 'up')} disabled={index === 0}>
+                            <Button variant="ghost" size="icon" onClick={() => handleReorder(index, 'up')} disabled={index === 0 || isEditor}>
                                 <ArrowUp className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleReorder(index, 'down')} disabled={index === categories.length - 1}>
+                            <Button variant="ghost" size="icon" onClick={() => handleReorder(index, 'down')} disabled={index === categories.length - 1 || isEditor}>
                                 <ArrowDown className="h-4 w-4" />
                             </Button>
                         </div>
@@ -230,7 +254,7 @@ export default function CategoriesPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" disabled={isEditor}>
                             <MoreHorizontal />
                           </Button>
                         </DropdownMenuTrigger>
@@ -250,7 +274,7 @@ export default function CategoriesPage() {
             </Table>
           )}
         </CardContent>
-         {isDirty && (
+         {isDirty && !isEditor && (
             <CardFooter className="flex justify-end">
                 <Button onClick={handleSaveOrder}>Save Order</Button>
             </CardFooter>
