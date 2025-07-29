@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -36,25 +37,40 @@ export default function ModulesPage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  async function fetchModules() {
+  const fetchModules = useCallback(async (showToast = false) => {
     try {
       setLoading(true);
       const fetchedModules = await getModules();
       setModules(fetchedModules);
+       if (showToast) {
+        toast({
+          title: "Modules Refreshed",
+          description: "The list of modules has been updated.",
+        });
+      }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Failed to fetch modules",
-        description: "Could not load the list of modules.",
-      });
+      if (showToast) {
+        toast({
+          variant: "destructive",
+          title: "Failed to fetch modules",
+          description: "Could not load the list of modules.",
+        });
+      }
     } finally {
       setLoading(false);
     }
-  }
+  }, [toast]);
 
   useEffect(() => {
     fetchModules();
-  }, []);
+    
+    const handleFocus = () => fetchModules(true);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    }
+  }, [fetchModules]);
 
   const handleDelete = async (moduleId: string) => {
     if (confirm("Are you sure you want to delete this module?")) {
