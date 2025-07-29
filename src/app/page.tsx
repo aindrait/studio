@@ -34,8 +34,6 @@ import { Logo } from "@/components/icons";
 import Link from "next/link";
 import { getModules } from "@/ai/flows/module-crud";
 import { useToast } from "@/hooks/use-toast";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-
 
 export default function Home() {
   const [modules, setModules] = React.useState<Module[]>([]);
@@ -146,7 +144,6 @@ export default function Home() {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-           <ThemeSwitcher />
            <SidebarMenuButton asChild>
             <Link href="/admin" className="w-full justify-start">
               <ShieldCheck />

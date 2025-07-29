@@ -5,7 +5,10 @@ import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "n
 import { type ThemeProviderProps } from "next-themes/dist/types"
 
 function CustomThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props} attribute="class">{children}</NextThemesProvider>
+  // We are stripping out the `value` and `attribute` props to avoid passing an invalid value
+  // like "light theme-zinc" to the underlying provider, which causes the DOMTokenList error.
+  const { value, attribute, ...rest } = props;
+  return <NextThemesProvider {...rest} attribute="class">{children}</NextThemesProvider>
 }
 
 export { CustomThemeProvider as ThemeProvider }
@@ -26,27 +29,18 @@ export function useTheme() {
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Use <html> if in top-level context, fallback to <body> in iframe/sandbox
-    const rootEl = window === window.parent ? document.documentElement : document.body;
-
-    // Remove all known variant classes
+    const rootEl = document.documentElement;
     rootEl.classList.remove('theme-zinc', 'theme-stone', 'theme-rose');
 
-    // Add current variant class if applicable
     if (variant !== 'default') {
-      try {
-        rootEl.classList.add(`theme-${variant}`);
-        localStorage.setItem('theme-variant', variant);
-      } catch (e) {
-        console.warn("Error applying theme variant:", e);
-      }
+      rootEl.classList.add(`theme-${variant}`);
+      localStorage.setItem('theme-variant', variant);
     } else {
       localStorage.removeItem('theme-variant');
     }
   }, [variant]);
 
   const setTheme = (newTheme: string) => {
-    // Accept format like "light theme-zinc" or "dark"
     const parts = newTheme.split(' ');
     const newBaseTheme = parts[0];
     const newVariantRaw = parts.find(p => p.startsWith('theme-'));
@@ -54,8 +48,6 @@ export function useTheme() {
 
     if (['light', 'dark', 'system'].includes(newBaseTheme)) {
       setBaseTheme(newBaseTheme);
-    } else {
-      console.warn(`Invalid base theme: ${newBaseTheme}`);
     }
 
     setVariant(newVariant);
@@ -63,5 +55,5 @@ export function useTheme() {
 
   const theme = variant !== 'default' ? `${baseTheme} theme-${variant}` : baseTheme;
 
-  return { ...rest, theme, setTheme };
+  return { ...rest, theme, setTheme, baseTheme, variant };
 }
