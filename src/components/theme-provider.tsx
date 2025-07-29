@@ -3,6 +3,7 @@
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
+import type { ThemeProviderProps } from "next-themes/dist/types"
 
 type Variant = "default" | "zinc" | "stone" | "rose"
 
@@ -12,7 +13,6 @@ type CustomThemeContextType = {
   variant: Variant;
   setVariant: (variant: Variant) => void;
 };
-
 
 const CustomThemeContext = React.createContext<CustomThemeContextType | undefined>(undefined);
 
@@ -44,8 +44,7 @@ function CustomThemeProvider({ children }: { children: React.ReactNode }) {
     const root = window.document.documentElement;
     
     // Remove any existing theme- variant classes
-    const themeClasses = Array.from(root.classList).filter(c => c.startsWith('theme-'));
-    root.classList.remove(...themeClasses);
+    root.classList.remove("theme-zinc", "theme-stone", "theme-rose");
 
     if (variant !== "default") {
       root.classList.add(`theme-${variant}`);
