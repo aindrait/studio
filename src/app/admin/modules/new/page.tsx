@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,8 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { getModule, updateModule, getCategories } from '@/ai/flows/module-crud';
-import type { Module, Category } from '@/lib/types';
+import { createModule, getCategories } from '@/ai/flows/module-crud';
+import type { Category } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 
@@ -29,7 +29,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
 
 function RichTextEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { quill, quillRef } = useQuill();
@@ -57,17 +56,13 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
 }
 
 
-export default function EditModulePage() {
+export default function NewModulePage() {
   const router = useRouter();
-  const params = useParams();
   const { toast } = useToast();
-  const id = Array.isArray(params.id) ? params.id[0] : params.id;
-
-  const [module, setModule] = useState<Module | null>(null);
+  
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [tagInput, setTagInput] = useState('');
-
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -80,40 +75,21 @@ export default function EditModulePage() {
     },
   });
 
-   useEffect(() => {
-    if (id) {
-      const fetchModuleAndCategories = async () => {
-        try {
-          setLoading(true);
-          const [fetchedModule, fetchedCategories] = await Promise.all([
-            getModule(id),
-            getCategories()
-          ]);
-          
-          if (fetchedModule) {
-            setModule(fetchedModule);
-            form.reset({
-                name: fetchedModule.name,
-                description: fetchedModule.description,
-                category: fetchedModule.category,
-                tags: fetchedModule.tags,
-                content: fetchedModule.content,
-            });
-          } else {
-             toast({ variant: "destructive", title: "Module not found" });
-             router.push('/admin/modules');
-          }
-          setCategories(fetchedCategories);
-        } catch (error) {
-          toast({ variant: "destructive", title: "Failed to load data" });
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchModuleAndCategories();
-    }
-  }, [id, router, toast, form]);
-
+  useEffect(() => {
+    const fetchCategoriesData = async () => {
+      try {
+        setLoading(true);
+        const fetchedCategories = await getCategories();
+        setCategories(fetchedCategories);
+      } catch (error) {
+        toast({ variant: "destructive", title: "Failed to load categories" });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategoriesData();
+  }, [toast]);
+  
   const handleAddTag = () => {
     if (tagInput && !form.getValues('tags').includes(tagInput)) {
       form.setValue('tags', [...form.getValues('tags'), tagInput]);
@@ -127,33 +103,25 @@ export default function EditModulePage() {
 
 
   const onSubmit = async (values: FormValues) => {
-    if (!module) return;
     try {
-        const updatedModuleData = {
-            ...module,
-            ...values,
-        };
-      await updateModule(updatedModuleData);
-      toast({ title: "Module Updated", description: "The module has been saved successfully." });
+      const newModule = {
+        id: `module-${Date.now()}`,
+        ...values,
+        versions: [], 
+      };
+      await createModule(newModule);
+      toast({ title: "Module Created", description: "The new module has been created successfully." });
       router.push('/admin/modules');
     } catch (error) {
-      toast({ variant: "destructive", title: "Update failed", description: "Could not save the module." });
+      toast({ variant: "destructive", title: "Creation failed", description: "Could not create the module." });
     }
   };
-
-  if (loading) {
-    return <p className="p-4">Loading module...</p>;
-  }
-  
-  if (!module) {
-    return <p className="p-4">Module not found.</p>;
-  }
 
   return (
     <Card>
         <CardHeader>
-            <CardTitle>Edit Module</CardTitle>
-            <CardDescription>Update the details for the &quot;{module.name}&quot; module.</CardDescription>
+            <CardTitle>New Module</CardTitle>
+            <CardDescription>Fill in the details to create a new module.</CardDescription>
         </CardHeader>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -250,8 +218,8 @@ export default function EditModulePage() {
                                 <FormLabel>Module Manual Content</FormLabel>
                                 <FormControl>
                                    <div className="h-96 pb-12">
-                                      <RichTextEditor {...field} />
-                                    </div>
+                                     <RichTextEditor {...field} />
+                                   </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -261,7 +229,7 @@ export default function EditModulePage() {
                 <CardFooter className="flex justify-end gap-2">
                     <Button variant="outline" onClick={() => router.push('/admin/modules')}>Cancel</Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>
-                        {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
+                        {form.formState.isSubmitting ? "Creating..." : "Create Module"}
                     </Button>
                 </CardFooter>
             </form>
