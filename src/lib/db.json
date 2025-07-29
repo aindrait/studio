@@ -1,10 +1,4 @@
 {
-  "categories": [
-    { "name": "Core Systems" },
-    { "name": "User Interface" },
-    { "name": "Data Management" },
-    { "name": "Test Module" }
-  ],
   "modules": [
     {
       "id": "auth-core",
@@ -124,6 +118,31 @@
           ]
         }
       ]
+    },
+    {
+      "id": "module-1753784171160",
+      "name": "Test3",
+      "description": "Test Debug",
+      "category": "Test Module",
+      "tags": [
+        "test"
+      ],
+      "content": "<p>Test Modules</p>",
+      "versions": []
+    }
+  ],
+  "categories": [
+    {
+      "name": "Test Module"
+    },
+    {
+      "name": "Core Systems"
+    },
+    {
+      "name": "User Interface"
+    },
+    {
+      "name": "Data Management"
     }
   ]
 }

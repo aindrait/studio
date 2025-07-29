@@ -1,3 +1,4 @@
+
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Logo } from "@/components/icons";
@@ -64,7 +65,7 @@ export default function AdminLayout({
               </div>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto"> {/* Added flex-1 and overflow-y-auto */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-8"> {/* Added padding */}
             {children}
           </main>
         </SidebarInset>
