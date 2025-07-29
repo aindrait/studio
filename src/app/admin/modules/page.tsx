@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import {
   Table,
@@ -46,6 +47,9 @@ export default function ModulesPage() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
   const fetchModulesAndCategories = async () => {
     try {
       setLoading(true);
@@ -78,6 +82,18 @@ export default function ModulesPage() {
     return modules.filter((module) => module.category === selectedCategory);
   }, [modules, selectedCategory]);
 
+  const totalPages = Math.ceil(filteredModules.length / ITEMS_PER_PAGE);
+
+  const paginatedModules = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredModules.slice(startIndex, endIndex);
+  }, [filteredModules, currentPage]);
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory]);
+
   const handleDelete = async (moduleId: string) => {
     if (confirm("Are you sure you want to delete this module?")) {
       try {
@@ -99,6 +115,12 @@ export default function ModulesPage() {
 
   const handleEdit = (moduleId: string) => {
     router.push(`/admin/modules/edit/${moduleId}`);
+  };
+  
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
   };
 
   return (
@@ -148,7 +170,7 @@ export default function ModulesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredModules.map((module) => (
+              {paginatedModules.map((module) => (
                 <TableRow key={module.id}>
                   <TableCell className="font-medium">{module.name}</TableCell>
                   <TableCell>{module.category}</TableCell>
@@ -177,12 +199,37 @@ export default function ModulesPage() {
             </TableBody>
           </Table>
         )}
-         {!loading && filteredModules.length === 0 && (
+         {!loading && paginatedModules.length === 0 && (
           <div className="text-center p-8 text-muted-foreground">
             No modules found for the selected category.
           </div>
         )}
       </CardContent>
+       {totalPages > 1 && (
+        <CardFooter className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }
