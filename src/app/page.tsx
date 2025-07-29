@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -41,23 +42,50 @@ export default function Home() {
   const [selectedModule, setSelectedModule] = React.useState<Module | null>(null);
   const { toast } = useToast();
 
-  React.useEffect(() => {
-    async function fetchModules() {
-      try {
-        const fetchedModules = await getModules();
-        setModules(fetchedModules);
-        if (fetchedModules.length > 0) {
-          setSelectedModule(fetchedModules[0]);
-        }
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Failed to load modules",
+  const fetchModules = React.useCallback(async (showToast = false) => {
+    try {
+      const fetchedModules = await getModules();
+      setModules(fetchedModules);
+
+      // If a module was already selected, find its updated version in the new list.
+      // Otherwise, select the first module.
+      if (selectedModule) {
+        const updatedSelectedModule = fetchedModules.find(m => m.id === selectedModule.id);
+        setSelectedModule(updatedSelectedModule || (fetchedModules.length > 0 ? fetchedModules[0] : null));
+      } else if (fetchedModules.length > 0) {
+        setSelectedModule(fetchedModules[0]);
+      }
+      
+      if(showToast) {
+         toast({
+          title: "Data Refreshed",
+          description: "Module list has been updated.",
         });
       }
+
+    } catch (error) {
+       if(showToast){
+        toast({
+            variant: "destructive",
+            title: "Failed to refresh modules",
+        });
+       }
     }
+  }, [selectedModule, toast]);
+
+
+  React.useEffect(() => {
     fetchModules();
-  }, [toast]);
+    
+    // Set up an event listener to refetch data when the window gets focus
+    window.addEventListener('focus', () => fetchModules(true));
+
+    // Cleanup listener on component unmount
+    return () => {
+      window.removeEventListener('focus', () => fetchModules(true));
+    }
+
+  }, []); // Run only once on initial mount
 
 
   const filteredModules = React.useMemo(() => {
@@ -109,6 +137,7 @@ export default function Home() {
               type="multiple"
               className="w-full"
               defaultValue={Object.keys(modulesByCategory)}
+              key={Object.keys(modulesByCategory).join('-')} // Add key to force re-render
             >
               {Object.entries(modulesByCategory).map(([category, modules]) => (
                 <AccordionItem
