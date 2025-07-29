@@ -6,10 +6,14 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Button } from '@/components/ui/button';
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,10 +45,19 @@ const versionChangeSchema = z.object({
 const formSchema = z.object({
   moduleId: z.string().min(1, "Please select a module."),
   version: z.string().min(1, "Version number is required (e.g., 1.2.3)."),
+  date: z.date({ required_error: "A date is required." }),
   changes: z.array(versionChangeSchema).min(1, "At least one change is required."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const editFormSchema = z.object({
+    version: z.string().min(1, "Version number is required."),
+    date: z.date({ required_error: "A date is required." }),
+    changes: z.array(versionChangeSchema).min(1, "At least one change is required."),
+});
+
+type EditFormValues = z.infer<typeof editFormSchema>;
 
 const versionIcons = {
   new: <PlusCircle className="h-4 w-4 text-green-500" />,
@@ -68,6 +81,7 @@ export default function VersionsPage() {
     defaultValues: {
       moduleId: '',
       version: '',
+      date: new Date(),
       changes: [{ type: 'improvement', description: '' }],
     },
   });
@@ -78,10 +92,11 @@ export default function VersionsPage() {
   });
 
   // Form for editing a version
-  const editForm = useForm<Version>({
+  const editForm = useForm<EditFormValues>({
+     resolver: zodResolver(editFormSchema),
      defaultValues: {
       version: '',
-      date: '',
+      date: new Date(),
       changes: [],
     },
   });
@@ -122,7 +137,7 @@ export default function VersionsPage() {
 
     const newVersion: Version = {
       version: values.version,
-      date: format(new Date(), "yyyy-MM-dd"),
+      date: format(values.date, "yyyy-MM-dd"),
       changes: values.changes,
     };
 
@@ -137,6 +152,7 @@ export default function VersionsPage() {
       form.reset({
         moduleId: values.moduleId,
         version: '',
+        date: new Date(),
         changes: [{ type: 'improvement', description: '' }],
       });
       await fetchModulesData(); // Refetch to update the list
@@ -151,17 +167,22 @@ export default function VersionsPage() {
     setEditingVersion(version);
     editForm.reset({
         version: version.version,
-        date: version.date,
+        date: new Date(version.date), // Make sure date string is converted to Date object
         changes: version.changes
     });
     setIsEditDialogOpen(true);
   }
   
-  const handleEditSubmit = async (values: Version) => {
+  const handleEditSubmit = async (values: EditFormValues) => {
     if (!selectedModule || !editingVersion) return;
 
+    const updatedVersion: Version = {
+      ...values,
+      date: format(values.date, "yyyy-MM-dd"),
+    };
+
     const updatedVersions = selectedModule.versions.map(v => 
-      v.version === editingVersion.version ? values : v
+      v.version === editingVersion.version ? updatedVersion : v
     );
 
     const updatedModule = {
@@ -240,19 +261,62 @@ export default function VersionsPage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="version"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Version Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 1.2.3" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="version"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Version Number</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 1.2.3" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Release Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div>
                 <FormLabel>Changes</FormLabel>
@@ -392,17 +456,60 @@ export default function VersionsPage() {
           </DialogHeader>
           <Form {...editForm}>
             <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-6">
-                <FormField
-                    control={editForm.control}
-                    name="version"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Version Number</FormLabel>
-                            <FormControl><Input {...field} /></FormControl>
-                            <FormMessage />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                        control={editForm.control}
+                        name="version"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Version Number</FormLabel>
+                                <FormControl><Input {...field} /></FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                      control={editForm.control}
+                      name="date"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Release Date</FormLabel>
+                           <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant={"outline"}
+                                  className={cn(
+                                    "w-full pl-3 text-left font-normal",
+                                    !field.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {field.value ? (
+                                    format(field.value, "PPP")
+                                  ) : (
+                                    <span>Pick a date</span>
+                                  )}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date > new Date() || date < new Date("1900-01-01")
+                                }
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <FormMessage />
                         </FormItem>
-                    )}
-                />
+                      )}
+                    />
+                </div>
                  <div>
                     <FormLabel>Changes</FormLabel>
                     <div className="space-y-4 mt-2">
@@ -474,3 +581,5 @@ export default function VersionsPage() {
     </div>
   );
 }
+
+    
