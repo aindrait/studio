@@ -54,10 +54,8 @@ export default function ModulesPage() {
   }, [toast]);
 
   useEffect(() => {
-    // This will run every time the page is focused or re-rendered
-    // ensuring data is fresh after navigation.
     fetchModules();
-  });
+  }, [fetchModules]);
 
 
   const handleDelete = async (moduleId: string) => {
