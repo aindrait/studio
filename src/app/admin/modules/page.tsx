@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +18,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PlusCircle, MoreHorizontal, Trash2, Pencil } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,38 +32,51 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getModules, deleteModule } from "@/ai/flows/module-crud";
-import { Module } from "@/lib/types";
+import { getModules, deleteModule, getCategories } from "@/ai/flows/module-crud";
+import { Module, Category } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<Module[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const router = useRouter();
 
-  const fetchModules = useCallback(async () => {
+  const fetchModulesAndCategories = async () => {
     try {
       setLoading(true);
-      const fetchedModules = await getModules();
+      const [fetchedModules, fetchedCategories] = await Promise.all([
+        getModules(),
+        getCategories(),
+      ]);
       setModules(fetchedModules);
+      setCategories(fetchedCategories);
     } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Failed to fetch modules",
-          description: "Could not load the list of modules.",
-        });
+      toast({
+        variant: "destructive",
+        title: "Failed to fetch data",
+        description: "Could not load modules and categories.",
+      });
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  };
 
   useEffect(() => {
-    fetchModules();
-  }, [fetchModules]);
+    fetchModulesAndCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  const filteredModules = useMemo(() => {
+    if (selectedCategory === "all") {
+      return modules;
+    }
+    return modules.filter((module) => module.category === selectedCategory);
+  }, [modules, selectedCategory]);
 
   const handleDelete = async (moduleId: string) => {
     if (confirm("Are you sure you want to delete this module?")) {
@@ -66,7 +86,7 @@ export default function ModulesPage() {
           title: "Module Deleted",
           description: "The module has been successfully deleted.",
         });
-        fetchModules();
+        fetchModulesAndCategories();
       } catch (error) {
         toast({
           variant: "destructive",
@@ -84,19 +104,34 @@ export default function ModulesPage() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <CardTitle className="font-headline">Modules</CardTitle>
             <CardDescription>
               Create, edit, and manage your documentation modules.
             </CardDescription>
           </div>
-          <Button asChild>
-            <Link href="/admin/modules/new">
-              <PlusCircle className="mr-2" />
-              New Module
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.name} value={category.name}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button asChild>
+              <Link href="/admin/modules/new">
+                <PlusCircle className="mr-2" />
+                New Module
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -113,7 +148,7 @@ export default function ModulesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {modules.map((module) => (
+              {filteredModules.map((module) => (
                 <TableRow key={module.id}>
                   <TableCell className="font-medium">{module.name}</TableCell>
                   <TableCell>{module.category}</TableCell>
@@ -141,6 +176,11 @@ export default function ModulesPage() {
               ))}
             </TableBody>
           </Table>
+        )}
+         {!loading && filteredModules.length === 0 && (
+          <div className="text-center p-8 text-muted-foreground">
+            No modules found for the selected category.
+          </div>
         )}
       </CardContent>
     </Card>
