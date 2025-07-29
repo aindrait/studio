@@ -85,7 +85,6 @@ export default function LoginPage() {
               <Input
                 id="username"
                 type="text"
-                placeholder="admin"
                 {...register("username")}
                 disabled={loading}
               />
@@ -98,7 +97,6 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
                 {...register("password")}
                 disabled={loading}
               />
