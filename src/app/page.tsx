@@ -65,7 +65,8 @@ export default function Home() {
       }
     }
     initialFetch();
-  }, [toast]); // Removed selectedModule from dependency array
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toast]); 
 
 
   const filteredModules = React.useMemo(() => {
@@ -119,8 +120,7 @@ export default function Home() {
             <Accordion
               type="multiple"
               className="w-full"
-              defaultValue={Object.keys(modulesByCategory)}
-              key={Object.keys(modulesByCategory).join('-')} // Force re-render on filter change
+              key={Object.keys(modulesByCategory).join('-')}
             >
               {Object.entries(modulesByCategory).map(([category, modules]) => (
                 <AccordionItem

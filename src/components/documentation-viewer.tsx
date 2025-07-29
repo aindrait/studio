@@ -120,7 +120,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
           </CardHeader>
           <CardContent>
              {module.versions.length > 0 ? (
-                <Accordion type="single" collapsible className="w-full" defaultValue={`item-${module.versions[0].version}`}>
+                <Accordion type="single" collapsible className="w-full">
                 {module.versions.map((version) => (
                     <AccordionItem
                     key={version.version}
