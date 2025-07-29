@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme as useNextTheme } from "next-themes"
-import { type ThemeProviderProps } from "next-themes/dist/types"
 
 type Variant = "default" | "zinc" | "stone" | "rose"
 
@@ -16,15 +15,20 @@ type CustomThemeContextType = {
 
 const CustomThemeContext = React.createContext<CustomThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <NextThemesProvider {...props}>
-        {children}
+    <NextThemesProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+    >
+      <CustomThemeProvider>{children}</CustomThemeProvider>
     </NextThemesProvider>
   )
 }
 
-export function CustomThemeProvider({ children }: { children: React.ReactNode }) {
+function CustomThemeProvider({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useNextTheme();
   const [variant, setVariant] = React.useState<Variant>("default");
 
@@ -67,7 +71,7 @@ export function CustomThemeProvider({ children }: { children: React.ReactNode })
 export const useTheme = () => {
   const context = React.useContext(CustomThemeContext);
   if (context === undefined) {
-    throw new Error("useTheme must be used within a CustomThemeProvider");
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 };
