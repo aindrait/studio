@@ -1,18 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Logo } from "@/components/icons";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
-import { FileText, Bot, Folder } from "lucide-react";
+import { Bot, FileText, Folder, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function AdminLayout({
   children,
@@ -21,7 +11,7 @@ export default function AdminLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-muted/40">
+      <div className="min-h-screen bg-muted/40 flex"> {/* Added flex */}
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
@@ -60,7 +50,7 @@ export default function AdminLayout({
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>
-        <SidebarInset>
+        <SidebarInset className="flex-1"> {/* Added flex-1 to content */}
           <header className="bg-background border-b sticky top-0 z-10">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex h-16 items-center justify-between">
@@ -68,17 +58,14 @@ export default function AdminLayout({
                   <Link href="/">
                     <Button variant="outline" size="icon" className="h-8 w-8">
                       <ArrowLeft className="h-4 w-4" />
-                      <span className="sr-only">Back to app</span>
                     </Button>
                   </Link>
                 </div>
               </div>
             </div>
           </header>
-          <main className="py-8">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              {children}
-            </div>
+          <main className="flex-1 overflow-y-auto"> {/* Added flex-1 and overflow-y-auto */}
+            {children}
           </main>
         </SidebarInset>
       </div>

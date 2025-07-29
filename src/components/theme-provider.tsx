@@ -10,7 +10,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 
 export function useTheme() {
-    const { theme, setTheme: setBaseTheme, ...rest } = useNextTheme();
+    const { theme: baseTheme, setTheme: setBaseTheme, ...rest } = useNextTheme();
     const [variant, setVariant] = React.useState<string | null>(null);
 
     React.useEffect(() => {
@@ -37,11 +37,13 @@ export function useTheme() {
         const [newBaseTheme, newVariant] = newTheme.split(' ');
         
         // This only passes "light" or "dark" to next-themes
-        setBaseTheme(newBaseTheme);
+        if (newBaseTheme) {
+            setBaseTheme(newBaseTheme);
+        }
 
         // This manages our variant class
         setVariant(newVariant || null);
     };
 
-    return { ...rest, theme: `${theme} ${variant || ''}`.trim(), setTheme };
+    return { ...rest, theme: `${baseTheme} ${variant || ''}`.trim(), setTheme };
 }
