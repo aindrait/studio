@@ -7,18 +7,28 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { Module, Category, Version } from '@/lib/types';
+import { Module, Category, Version, AdminUser } from '@/lib/types';
 import fs from 'fs/promises';
 import path from 'path';
+import { login } from '@/lib/session';
+
 
 const CategorySchema = z.object({
   name: z.string(),
+});
+
+const AdminUserSchema = z.object({
+    id: z.string(),
+    username: z.string(),
+    password: z.string().optional(),
+    role: z.enum(['admin', 'editor']),
 });
 
 // Define the structure of our database
 const DbSchema = z.object({
   modules: z.array(z.any()), // Using any for now to avoid schema duplication, will be validated on use
   categories: z.array(CategorySchema),
+  users: z.array(AdminUserSchema),
 });
 
 type Db = z.infer<typeof DbSchema>;
@@ -35,7 +45,7 @@ async function readDb(): Promise<Db> {
   } catch (error) {
     // If the file doesn't exist or is empty, return a default structure
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return { modules: [], categories: [] };
+      return { modules: [], categories: [], users: [] };
     }
     console.error("Error reading or parsing database file:", error);
     throw new Error("Could not read from database.");
@@ -72,6 +82,93 @@ const ModuleSchema = z.object({
     })),
   })),
 });
+
+
+// User Flows
+export const loginUserFlow = ai.defineFlow({
+    name: 'loginUserFlow',
+    inputSchema: z.object({ username: z.string(), password: z.string() }),
+    outputSchema: AdminUserSchema.omit({ password: true }).optional(),
+}, async ({ username, password }) => {
+    const db = await readDb();
+    const user = db.users.find(u => u.username === username && u.password === password);
+    if (user) {
+        await login({ username: user.username });
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+    }
+    return undefined;
+});
+
+export const getAdminUsersFlow = ai.defineFlow({
+    name: 'getAdminUsersFlow',
+    inputSchema: z.void(),
+    outputSchema: z.array(AdminUserSchema.omit({ password: true })),
+}, async () => {
+    const db = await readDb();
+    return db.users.map(u => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = u;
+        return userWithoutPassword;
+    });
+});
+
+export const createAdminUserFlow = ai.defineFlow({
+    name: 'createAdminUserFlow',
+    inputSchema: AdminUserSchema,
+    outputSchema: AdminUserSchema.omit({ password: true }),
+}, async (newUser) => {
+    const db = await readDb();
+    if (db.users.some(u => u.username === newUser.username)) {
+        throw new Error('Username already exists.');
+    }
+    const userWithId = { ...newUser, id: `user-${Date.now()}` };
+    db.users.push(userWithId);
+    await writeDb(db);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = userWithId;
+    return userWithoutPassword;
+});
+
+export const updateAdminUserFlow = ai.defineFlow({
+    name: 'updateAdminUserFlow',
+    inputSchema: AdminUserSchema,
+    outputSchema: AdminUserSchema.omit({ password: true }).optional(),
+}, async (userData) => {
+    const db = await readDb();
+    const index = db.users.findIndex(u => u.id === userData.id);
+    if (index !== -1) {
+        const existingUser = db.users[index];
+        // Only update password if a new one is provided
+        const newPassword = userData.password ? userData.password : existingUser.password;
+        db.users[index] = { ...existingUser, ...userData, password: newPassword };
+        await writeDb(db);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userWithoutPassword } = db.users[index];
+        return userWithoutPassword;
+    }
+    return undefined;
+});
+
+export const deleteAdminUserFlow = ai.defineFlow({
+    name: 'deleteAdminUserFlow',
+    inputSchema: z.string(), // user id
+    outputSchema: z.boolean(),
+}, async (id) => {
+    const db = await readDb();
+    if (id === 'user-root') {
+        throw new Error('Cannot delete root admin user.');
+    }
+    const index = db.users.findIndex(u => u.id === id);
+    if (index !== -1) {
+        db.users.splice(index, 1);
+        await writeDb(db);
+        return true;
+    }
+    return false;
+});
+
 
 export const getModulesFlow = ai.defineFlow(
   {
@@ -267,3 +364,25 @@ export async function deleteCategory(name: string): Promise<boolean> {
 export async function reorderCategories(categories: Category[]): Promise<boolean> {
     return await reorderCategoriesFlow(categories);
 }
+
+export async function loginUser(username: string, password: string):Promise<Omit<AdminUser, 'password'> | undefined> {
+    return await loginUserFlow({ username, password });
+}
+
+export async function getAdminUsers(): Promise<Omit<AdminUser, 'password'>[]> {
+    return await getAdminUsersFlow();
+}
+
+export async function createAdminUser(user: AdminUser): Promise<Omit<AdminUser, 'password'>> {
+    return await createAdminUserFlow(user);
+}
+
+export async function updateAdminUser(user: AdminUser): Promise<Omit<AdminUser, 'password'> | undefined> {
+    return await updateAdminUserFlow(user);
+}
+
+export async function deleteAdminUser(id: string): Promise<boolean> {
+    return await deleteAdminUserFlow(id);
+}
+
+    
