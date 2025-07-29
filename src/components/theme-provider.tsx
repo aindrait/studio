@@ -53,7 +53,7 @@ export function useTheme() {
     setVariant(newVariant);
   };
 
-  const theme = variant !== 'default' ? `${baseTheme} theme-${variant}` : baseTheme;
+  const theme = variant !== 'default' && baseTheme ? `${baseTheme} theme-${variant}` : baseTheme;
 
   return { ...rest, theme, setTheme, baseTheme, variant };
 }
