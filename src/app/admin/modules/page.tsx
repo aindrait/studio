@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusCircle, MoreHorizontal } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Trash2, Pencil } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,11 +28,13 @@ import { getModules, deleteModule } from "@/ai/flows/module-crud";
 import { Module } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function ModulesPage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const router = useRouter();
 
   async function fetchModules() {
     try {
@@ -71,6 +73,10 @@ export default function ModulesPage() {
         });
       }
     }
+  };
+
+  const handleEdit = (moduleId: string) => {
+    router.push(`/admin/modules/edit/${moduleId}`);
   };
 
   return (
@@ -118,10 +124,12 @@ export default function ModulesPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
-                        <DropdownMenuItem asChild>
-                           <Link href={`/admin/modules/edit/${module.id}`}>Edit</Link>
+                        <DropdownMenuItem onClick={() => handleEdit(module.id)}>
+                          <Pencil className="mr-2 h-4 w-4" />
+                          Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleDelete(module.id)}>
+                          <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>

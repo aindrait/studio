@@ -11,46 +11,57 @@ function CustomThemeProvider({ children, ...props }: ThemeProviderProps) {
 export { CustomThemeProvider as ThemeProvider }
 
 export function useTheme() {
-    const { theme: baseTheme, setTheme: setBaseTheme, ...rest } = useNextTheme();
-    const [variant, setVariant] = React.useState<string | null>(null);
+  const { theme: baseTheme, setTheme: setBaseTheme, ...rest } = useNextTheme();
+  const [variant, setVariant] = React.useState<string>('default');
 
-    React.useEffect(() => {
-        const storedVariant = localStorage.getItem('theme-variant');
-        if (storedVariant) {
-            setVariant(storedVariant);
-        } else {
-             // If no variant is stored, default to 'default' which has no class
-             setVariant('default');
-        }
-    }, []);
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-    React.useEffect(() => {
-        // Remove all theme-variant classes
-        document.documentElement.classList.remove('theme-zinc', 'theme-stone', 'theme-rose');
-        
-        // Add the current variant's class if it's not the default
-        if (variant && variant !== 'default') {
-            document.documentElement.classList.add(`theme-${variant}`);
-            localStorage.setItem('theme-variant', variant);
-        } else {
-            localStorage.removeItem('theme-variant');
-        }
-    }, [variant]);
+    const storedVariant = localStorage.getItem('theme-variant');
+    if (storedVariant) {
+      setVariant(storedVariant);
+    }
+  }, []);
 
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-    const setTheme = (newTheme: string) => {
-        // The theme string can be "light", "dark", or "light theme-zinc"
-        const [newBaseTheme, ...variantParts] = newTheme.split(' ');
-        const newVariant = variantParts.join(' ').replace('theme-','');
-        
-        if (newBaseTheme === 'light' || newBaseTheme === 'dark' || newBaseTheme === 'system') {
-            setBaseTheme(newBaseTheme);
-        }
+    // Use <html> if in top-level context, fallback to <body> in iframe/sandbox
+    const rootEl = window === window.parent ? document.documentElement : document.body;
 
-        setVariant(newVariant || 'default');
-    };
-    
-    const theme = variant && variant !== 'default' ? `${baseTheme} theme-${variant}` : baseTheme;
+    // Remove all known variant classes
+    rootEl.classList.remove('theme-zinc', 'theme-stone', 'theme-rose');
 
-    return { ...rest, theme, setTheme };
+    // Add current variant class if applicable
+    if (variant !== 'default') {
+      try {
+        rootEl.classList.add(`theme-${variant}`);
+        localStorage.setItem('theme-variant', variant);
+      } catch (e) {
+        console.warn("Error applying theme variant:", e);
+      }
+    } else {
+      localStorage.removeItem('theme-variant');
+    }
+  }, [variant]);
+
+  const setTheme = (newTheme: string) => {
+    // Accept format like "light theme-zinc" or "dark"
+    const parts = newTheme.split(' ');
+    const newBaseTheme = parts[0];
+    const newVariantRaw = parts.find(p => p.startsWith('theme-'));
+    const newVariant = newVariantRaw?.replace('theme-', '') || 'default';
+
+    if (['light', 'dark', 'system'].includes(newBaseTheme)) {
+      setBaseTheme(newBaseTheme);
+    } else {
+      console.warn(`Invalid base theme: ${newBaseTheme}`);
+    }
+
+    setVariant(newVariant);
+  };
+
+  const theme = variant !== 'default' ? `${baseTheme} theme-${variant}` : baseTheme;
+
+  return { ...rest, theme, setTheme };
 }
