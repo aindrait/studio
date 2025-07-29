@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const secretKey = process.env.SESSION_SECRET || 'fallback-secret-key-for-development';
 const key = new TextEncoder().encode(secretKey);
+const COOKIE_NAME = 'mds-manual-session';
 
 export async function encrypt(payload: any) {
   return await new SignJWT(payload)
@@ -33,16 +34,16 @@ export async function login(user: { username: string }) {
   const session = await encrypt({ user, expires });
 
   // Save the session in a cookie
-  cookies().set('session', session, { expires, httpOnly: true });
+  cookies().set(COOKIE_NAME, session, { expires, httpOnly: true });
 }
 
 export async function logout() {
   // Destroy the session
-  cookies().set('session', '', { expires: new Date(0) });
+  cookies().set(COOKIE_NAME, '', { expires: new Date(0) });
 }
 
 export async function getSession() {
-  const session = cookies().get('session')?.value;
+  const session = cookies().get(COOKIE_NAME)?.value;
   if (!session) return null;
   const decryptedSession = await decrypt(session);
   if (!decryptedSession) return null;
