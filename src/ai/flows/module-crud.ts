@@ -5,14 +5,14 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import { modules as allModules } from '@/lib/data';
-import { Module, ModuleCategory, Version } from '@/lib/types';
+import { z } from 'zod';
+import { modules as allModules, categories as allCategories } from '@/lib/data';
+import { Module, Category, Version } from '@/lib/types';
 
 const ModuleSchema = z.object({
   id: z.string(),
   name: z.string(),
-  category: z.enum(["Core Systems", "User Interface", "Data Management"]),
+  category: z.string(),
   tags: z.array(z.string()),
   description: z.string(),
   content: z.string(),
@@ -57,7 +57,6 @@ export const createModuleFlow = ai.defineFlow(
   },
   async (module) => {
     // In a real app, you'd save this to a database.
-    // For this example, we'll just push it to the in-memory array.
     allModules.push(module);
     return module;
   }
@@ -95,6 +94,68 @@ export const deleteModuleFlow = ai.defineFlow(
   }
 );
 
+
+export const getCategoriesFlow = ai.defineFlow({
+    name: 'getCategoriesFlow',
+    inputSchema: z.void(),
+    outputSchema: z.array(z.string()),
+}, async () => {
+    return allCategories;
+});
+
+export const createCategoryFlow = ai.defineFlow({
+    name: 'createCategoryFlow',
+    inputSchema: z.string(),
+    outputSchema: z.string(),
+}, async (category) => {
+    if (allCategories.includes(category)) {
+        throw new Error(`Category "${category}" already exists.`);
+    }
+    allCategories.push(category);
+    return category;
+});
+
+export const updateCategoryFlow = ai.defineFlow({
+    name: 'updateCategoryFlow',
+    inputSchema: z.object({ oldName: z.string(), newName: z.string() }),
+    outputSchema: z.string(),
+}, async ({ oldName, newName }) => {
+    const index = allCategories.indexOf(oldName);
+    if (index === -1) {
+        throw new Error(`Category "${oldName}" not found.`);
+    }
+    if (allCategories.includes(newName) && oldName !== newName) {
+      throw new Error(`Category "${newName}" already exists.`);
+    }
+    allCategories[index] = newName;
+    // also update modules
+    allModules.forEach(module => {
+        if (module.category === oldName) {
+            module.category = newName;
+        }
+    });
+    return newName;
+});
+
+
+export const deleteCategoryFlow = ai.defineFlow({
+    name: 'deleteCategoryFlow',
+    inputSchema: z.string(),
+    outputSchema: z.boolean(),
+}, async (name) => {
+    const isUsed = allModules.some(m => m.category === name);
+    if (isUsed) {
+        throw new Error(`Category "${name}" is in use and cannot be deleted.`);
+    }
+    const index = allCategories.indexOf(name);
+    if (index !== -1) {
+        allCategories.splice(index, 1);
+        return true;
+    }
+    return false;
+});
+
+
 export async function getModules(): Promise<Module[]> {
     return await getModulesFlow();
 }
@@ -113,4 +174,20 @@ export async function updateModule(module: Module): Promise<Module | undefined> 
 
 export async function deleteModule(id: string): Promise<boolean> {
     return await deleteModuleFlow(id);
+}
+
+export async function getCategories(): Promise<Category[]> {
+    return await getCategoriesFlow();
+}
+
+export async function createCategory(name: string): Promise<Category> {
+    return await createCategoryFlow(name);
+}
+
+export async function updateCategory(oldName: string, newName: string): Promise<Category> {
+    return await updateCategoryFlow({ oldName, newName });
+}
+
+export async function deleteCategory(name: string): Promise<boolean> {
+    return await deleteCategoryFlow(name);
 }

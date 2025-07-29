@@ -1,5 +1,11 @@
 import { type Module } from "./types";
 
+export let categories: string[] = [
+  "Core Systems",
+  "User Interface",
+  "Data Management",
+];
+
 export const modules: Module[] = [
   {
     id: "auth-core",

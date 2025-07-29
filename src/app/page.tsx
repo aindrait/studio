@@ -12,7 +12,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -26,7 +25,6 @@ import {
   BookOpen,
   LayoutGrid,
   Search,
-  Settings,
   ShieldCheck,
 } from "lucide-react";
 
@@ -35,16 +33,37 @@ import { type Module, type ModuleCategory } from "@/lib/types";
 import { DocumentationViewer } from "@/components/documentation-viewer";
 import { Logo } from "@/components/icons";
 import Link from "next/link";
+import { getModules } from "@/ai/flows/module-crud";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
+  const [modules, setModules] = React.useState<Module[]>([]);
   const [search, setSearch] = React.useState("");
-  const [selectedModule, setSelectedModule] = React.useState<Module | null>(
-    allModules[0]
-  );
+  const [selectedModule, setSelectedModule] = React.useState<Module | null>(null);
+  const { toast } = useToast();
+
+  React.useEffect(() => {
+    async function fetchModules() {
+      try {
+        const fetchedModules = await getModules();
+        setModules(fetchedModules);
+        if (fetchedModules.length > 0) {
+          setSelectedModule(fetchedModules[0]);
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Failed to load modules",
+        });
+      }
+    }
+    fetchModules();
+  }, [toast]);
+
 
   const filteredModules = React.useMemo(() => {
-    if (!search) return allModules;
-    return allModules.filter(
+    if (!search) return modules;
+    return modules.filter(
       (module) =>
         module.name.toLowerCase().includes(search.toLowerCase()) ||
         module.description.toLowerCase().includes(search.toLowerCase()) ||
@@ -52,7 +71,7 @@ export default function Home() {
           tag.toLowerCase().includes(search.toLowerCase())
         )
     );
-  }, [search]);
+  }, [search, modules]);
 
   const modulesByCategory = React.useMemo(() => {
     return filteredModules.reduce((acc, module) => {
@@ -126,7 +145,7 @@ export default function Home() {
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <SidebarMenuButton asChild>
+           <SidebarMenuButton asChild>
             <Link href="/admin" className="w-full justify-start">
               <ShieldCheck />
               Admin Panel

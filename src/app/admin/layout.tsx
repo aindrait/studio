@@ -12,7 +12,7 @@ import {
   SidebarMenuButton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { FileText, Bot } from "lucide-react";
+import { FileText, Bot, Folder } from "lucide-react";
 
 export default function AdminLayout({
   children,
@@ -46,6 +46,14 @@ export default function AdminLayout({
                   <Link href="/admin/modules">
                     <FileText />
                     Modules
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/admin/categories">
+                    <Folder />
+                    Categories
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

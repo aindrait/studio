@@ -1,4 +1,4 @@
-export type ModuleCategory = "Core Systems" | "User Interface" | "Data Management";
+export type ModuleCategory = string;
 
 export type Version = {
   version: string;
@@ -19,3 +19,5 @@ export type Module = {
   image?: string;
   versions: Version[];
 };
+
+export type Category = string;
