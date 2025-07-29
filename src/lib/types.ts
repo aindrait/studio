@@ -25,3 +25,10 @@ export type Module = {
 export type Category = {
   name: string;
 };
+
+export type AdminUser = {
+  id: string;
+  username: string;
+  password?: string; // Should be hashed in a real app. Optional when sending to client.
+  role: 'admin' | 'editor';
+}

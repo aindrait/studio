@@ -144,5 +144,13 @@
     {
       "name": "Data Management"
     }
+  ],
+  "users": [
+    {
+      "id": "user-root",
+      "username": "admin",
+      "password": "admin",
+      "role": "admin"
+    }
   ]
 }
