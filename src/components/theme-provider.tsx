@@ -25,7 +25,7 @@ export function useTheme() {
         // When the variant changes, update the class on the html element and in local storage.
         document.documentElement.classList.remove('theme-zinc', 'theme-stone', 'theme-rose');
         if (variant) {
-            document.documentElement.classList.add(variant);
+            document.documentElement.classList.add(`theme-${variant}`);
             localStorage.setItem('theme-variant', variant);
         } else {
              localStorage.removeItem('theme-variant');
@@ -42,8 +42,10 @@ export function useTheme() {
         }
 
         // This manages our variant class
-        setVariant(newVariant || null);
+        setVariant(newVariant ? newVariant.replace('theme-', '') : null);
     };
+    
+    const theme = variant ? `${baseTheme} theme-${variant}` : baseTheme;
 
-    return { ...rest, theme: `${baseTheme} ${variant || ''}`.trim(), setTheme };
+    return { ...rest, theme, setTheme };
 }
