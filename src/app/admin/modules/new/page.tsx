@@ -111,6 +111,7 @@ export default function NewModulePage() {
       };
       await createModule(newModule);
       toast({ title: "Module Created", description: "The new module has been created successfully." });
+      router.refresh();
       router.push('/admin/modules');
     } catch (error) {
       toast({ variant: "destructive", title: "Creation failed", description: "Could not create the module." });
