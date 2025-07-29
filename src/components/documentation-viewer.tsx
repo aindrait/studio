@@ -158,5 +158,3 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
     </div>
   );
 }
-
-    
