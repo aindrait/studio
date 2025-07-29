@@ -1,12 +1,14 @@
 export type ModuleCategory = string;
 
+export type VersionChange = {
+  type: "new" | "improvement" | "fix";
+  description: string;
+};
+
 export type Version = {
   version: string;
   date: string;
-  changes: {
-    type: "new" | "improvement" | "fix";
-    description: string;
-  }[];
+  changes: VersionChange[];
 };
 
 export type Module = {

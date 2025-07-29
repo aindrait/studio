@@ -1,7 +1,7 @@
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Logo } from "@/components/icons";
-import { Bot, FileText, Folder, ArrowLeft } from "lucide-react";
+import { Bot, FileText, Folder, ArrowLeft, GitCommitHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function AdminLayout({
@@ -36,6 +36,14 @@ export default function AdminLayout({
                   <Link href="/admin/categories">
                     <Folder />
                     Categories
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/admin/versions">
+                    <GitCommitHorizontal />
+                    Versions
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
