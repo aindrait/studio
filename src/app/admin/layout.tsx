@@ -25,14 +25,6 @@ export default function AdminLayout({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/admin/toc-generator">
-                    <Bot />
-                    TOC Generator
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
                   <Link href="/admin/modules">
                     <FileText />
                     Modules
