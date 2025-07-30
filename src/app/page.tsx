@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
@@ -136,10 +135,7 @@ export default function Home() {
               <p className="text-xs text-sidebar-foreground/80">{appSettings?.appSubtitle}</p>
             </div>
           </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <div className="relative">
+            <div className="relative mt-2">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search modules..."
@@ -148,7 +144,9 @@ export default function Home() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-          </SidebarGroup>
+        </SidebarHeader>
+        <SidebarContent>
+          
           <SidebarMenu>
              {loading ? (
               <p className="p-2 text-sm text-muted-foreground">Loading...</p>
@@ -233,5 +231,3 @@ export default function Home() {
     </SidebarProvider>
   );
 }
-
-    
