@@ -57,7 +57,6 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
     setIsClient(true);
   }, []);
   
-  const defaultAccordionValue = module?.versions?.[0]?.version ? `item-${module.versions[0].version}` : undefined;
   const hasMoreVersions = module && module.versions.length > MAX_VERSIONS_VISIBLE;
 
   if (!module) {
@@ -141,14 +140,14 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
           <CardContent>
              {module.versions.length > 0 ? (
                 <Dialog>
-                   {module.versions.length > MAX_VERSIONS_VISIBLE && (
+                   {module.versions.length > 0 && (
                      <DialogTrigger asChild>
                        <Button variant="outline" size="sm" className="w-full mb-4">
                          <History className="mr-2 h-4 w-4" /> View All
                        </Button>
                      </DialogTrigger>
                    )}
-                  <Accordion type="single" collapsible className="w-full" defaultValue={defaultAccordionValue}>
+                  <Accordion type="single" collapsible className="w-full">
                     {module.versions.slice(0, MAX_VERSIONS_VISIBLE).map((version) => (
                         <AccordionItem
                         key={version.version}
@@ -188,7 +187,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                         <DialogTitle>Full Changelog: {module.name}</DialogTitle>
                      </DialogHeader>
                       <div className="max-h-[70vh] overflow-y-auto pr-4">
-                        <Accordion type="single" collapsible className="w-full" defaultValue={defaultAccordionValue}>
+                        <Accordion type="single" collapsible className="w-full">
                            {module.versions.map((version) => (
                               <AccordionItem
                               key={`modal-${version.version}`}
@@ -246,4 +245,3 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
     </div>
   );
 }
-
