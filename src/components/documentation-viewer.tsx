@@ -148,7 +148,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                                 </DialogDescription>
                             </DialogHeader>
                             <ScrollArea className="h-[60vh] pr-6">
-                                <Accordion type="multiple" className="w-full">
+                                <Accordion type="multiple" className="w-full" defaultValue={[`full-${module.versions[0]?.version}`]}>
                                     {module.versions.map((version) => (
                                     <AccordionItem key={`full-${version.version}`} value={`full-${version.version}`}>
                                         <AccordionTrigger>

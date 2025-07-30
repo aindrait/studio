@@ -136,9 +136,8 @@ export default function Home() {
             </div>
           </div>
         </SidebarHeader>
-        <SidebarHeader className="h-20 p-4 border-b flex-shrink-0" />
-        <SidebarContent className="p-4">
-            <div className="relative mb-4">
+        <SidebarHeader className="h-20 p-4 border-b border-sidebar-background flex-shrink-0">
+           <div className="relative">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search modules..."
@@ -147,6 +146,8 @@ export default function Home() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+        </SidebarHeader>
+        <SidebarContent className="p-4">
           <SidebarMenu>
              {loading ? (
               <p className="p-2 text-sm text-muted-foreground">Loading...</p>
@@ -154,6 +155,7 @@ export default function Home() {
             <Accordion
               type="multiple"
               className="w-full"
+              defaultValue={visibleCategories.map(c => c.name)}
             >
               {categories.map((category) => {
                 const categoryModules = modulesByCategory[category.name] || [];
