@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { useQuill } from 'react-quilljs';
 import 'quill/dist/quill.snow.css';
 import ImageResize from 'quill-image-resize-module-ts';
+import { FloatStyle } from 'quill-image-resize-module-ts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -47,6 +48,10 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
             ['link', 'image'],
             ['clean']
         ],
+        imageResize: {
+          parchment: Quill?.import('parchment'),
+          modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
+        }
     },
     formats: [
         "header", "font", "size",
@@ -61,6 +66,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
   React.useEffect(() => {
     if (Quill && !quill) {
       Quill.register('modules/imageResize', ImageResize);
+      Quill.register('formats/float', FloatStyle);
     }
     if (quill) {
       quill.on('text-change', (_delta, _oldDelta, source) => {
