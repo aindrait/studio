@@ -140,13 +140,11 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
           <CardContent>
              {module.versions.length > 0 ? (
                 <Dialog>
-                   {module.versions.length > 0 && (
-                     <DialogTrigger asChild>
-                       <Button variant="outline" size="sm" className="w-full mb-4">
-                         <History className="mr-2 h-4 w-4" /> View All
-                       </Button>
-                     </DialogTrigger>
-                   )}
+                   <DialogTrigger asChild>
+                     <Button variant="outline" size="sm" className="w-full mb-4">
+                       <History className="mr-2 h-4 w-4" /> View All
+                     </Button>
+                   </DialogTrigger>
                   <Accordion type="single" collapsible className="w-full">
                     {module.versions.slice(0, MAX_VERSIONS_VISIBLE).map((version) => (
                         <AccordionItem
@@ -182,7 +180,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                     ))}
                   </Accordion>
 
-                  <DialogContent className="sm:max-w-3xl">
+                  <DialogContent className="sm:max-w-4xl">
                      <DialogHeader>
                         <DialogTitle>Full Changelog: {module.name}</DialogTitle>
                      </DialogHeader>
