@@ -46,7 +46,8 @@
             }
           ]
         }
-      ]
+      ],
+      "isWelcome": true
     },
     {
       "id": "ui-kit",
@@ -85,7 +86,8 @@
             }
           ]
         }
-      ]
+      ],
+      "isWelcome": false
     },
     {
       "id": "db-connector",
@@ -117,7 +119,8 @@
             }
           ]
         }
-      ]
+      ],
+      "isWelcome": false
     },
     {
       "id": "module-1753784171160",
@@ -139,7 +142,8 @@
             }
           ]
         }
-      ]
+      ],
+      "isWelcome": false
     }
   ],
   "categories": [

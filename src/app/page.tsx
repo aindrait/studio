@@ -149,7 +149,6 @@ export default function Home() {
             <Accordion
               type="multiple"
               className="w-full"
-              defaultValue={categories.map(c => c.name)}
             >
               {categories.map((category) => {
                 const categoryModules = modulesByCategory[category.name] || [];
