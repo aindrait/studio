@@ -15,6 +15,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { type Module } from "@/lib/types";
 import {
@@ -24,8 +25,13 @@ import {
   Tag,
   Wrench,
   BookOpen,
+  History,
 } from "lucide-react";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface DocumentationViewerProps {
   module: Module | null;
@@ -36,6 +42,8 @@ const versionIcons = {
   improvement: <ArrowUpCircle className="h-4 w-4 text-blue-500" />,
   fix: <Wrench className="h-4 w-4 text-orange-500" />,
 };
+
+const MAX_VERSIONS_VISIBLE = 3;
 
 export function DocumentationViewer({ module }: DocumentationViewerProps) {
   const [isClient, setIsClient] = useState(false);
@@ -66,6 +74,9 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
       </Card>
     );
   }
+
+  const visibleVersions = module.versions.slice(0, MAX_VERSIONS_VISIBLE);
+  const hasMoreVersions = module.versions.length > MAX_VERSIONS_VISIBLE;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -120,8 +131,8 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
           </CardHeader>
           <CardContent>
              {module.versions.length > 0 ? (
-                <Accordion type="single" collapsible className="w-full">
-                {module.versions.map((version) => (
+                <Accordion type="single" collapsible className="w-full" defaultValue={`item-${visibleVersions[0]?.version}`}>
+                {visibleVersions.map((version) => (
                     <AccordionItem
                     key={version.version}
                     value={`item-${version.version}`}
@@ -155,6 +166,59 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                 <p className="text-sm text-center text-muted-foreground py-4">No version history found.</p>
              )}
           </CardContent>
+            {hasMoreVersions && (
+            <CardFooter>
+                 <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">
+                            <History className="mr-2 h-4 w-4" />
+                            View Full Changelog
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[625px]">
+                        <DialogHeader>
+                            <DialogTitle>Full Changelog for {module.name}</DialogTitle>
+                            <DialogDescription>
+                                All updates, improvements, and fixes from the beginning.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <ScrollArea className="h-[60vh] pr-6">
+                            <Accordion type="multiple" className="w-full">
+                                {module.versions.map((version) => (
+                                <AccordionItem key={`full-${version.version}`} value={`full-${version.version}`}>
+                                    <AccordionTrigger>
+                                         <div className="flex flex-col items-start">
+                                            <span className="font-semibold">v{version.version}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {version.date}
+                                            </span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <ul className="space-y-2">
+                                            {version.changes.map((change, index) => (
+                                            <li key={`full-${index}`} className="flex items-start gap-3">
+                                                <div className="mt-1">{versionIcons[change.type]}</div>
+                                                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground"
+                                                    dangerouslySetInnerHTML={{ __html: change.description }}
+                                                />
+                                            </li>
+                                            ))}
+                                        </ul>
+                                    </AccordionContent>
+                                </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </ScrollArea>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button">Close</Button>
+                            </DialogClose>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </CardFooter>
+            )}
         </Card>
       </div>
     </div>
