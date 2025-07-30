@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -135,7 +136,7 @@ export default function Home() {
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search modules..."
-                className="pl-8 bg-input"
+                className="pl-8 bg-sidebar-input"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -219,7 +220,7 @@ export default function Home() {
           <DocumentationViewer module={selectedModule} />
         </main>
         <footer className="text-center p-4 text-xs text-muted-foreground">
-            Mukti Group @{new Date().getFullYear()}
+            &copy; {new Date().getFullYear()} Mukti Group
         </footer>
       </SidebarInset>
     </SidebarProvider>
