@@ -98,6 +98,7 @@ const ModuleSchema = z.object({
     changes: z.array(z.object({
       type: z.enum(["new", "improvement", "fix"]),
       description: z.string(),
+      image: z.string().optional(),
     })),
   })),
   isWelcome: z.boolean().optional(),

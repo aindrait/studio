@@ -1,8 +1,10 @@
+
 export type ModuleCategory = string;
 
 export type VersionChange = {
   type: "new" | "improvement" | "fix";
   description: string;
+  image?: string;
 };
 
 export type Version = {

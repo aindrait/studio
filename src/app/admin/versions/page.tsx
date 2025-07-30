@@ -39,6 +39,7 @@ import RichTextEditor from '@/components/rich-text-editor';
 const versionChangeSchema = z.object({
   type: z.enum(["new", "improvement", "fix"]),
   description: z.string().min(1, "Description is required"),
+  image: z.string().optional(),
 });
 
 const formSchema = z.object({
@@ -81,7 +82,7 @@ export default function VersionsPage() {
       moduleId: '',
       version: '',
       date: new Date(),
-      changes: [{ type: 'improvement', description: '' }],
+      changes: [{ type: 'improvement', description: '', image: '' }],
     },
   });
 
@@ -153,7 +154,7 @@ export default function VersionsPage() {
         moduleId: values.moduleId,
         version: '',
         date: new Date(),
-        changes: [{ type: 'improvement', description: '' }],
+        changes: [{ type: 'improvement', description: '', image: '' }],
       });
       await fetchModulesData(); // Refetch to update the list
       const updatedMod = await getModules().then(mods => mods.find(m => m.id === values.moduleId));
@@ -346,21 +347,36 @@ export default function VersionsPage() {
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={form.control}
-                          name={`changes.${index}.description`}
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-4">
-                                <FormLabel className="sr-only">Description</FormLabel>
-                                <FormControl>
-                                   <div className="h-48 pb-10">
-                                      <RichTextEditor value={field.value} onChange={field.onChange} />
-                                   </div>
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div className="md:col-span-4 space-y-4">
+                            <FormField
+                            control={form.control}
+                            name={`changes.${index}.description`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="sr-only">Description</FormLabel>
+                                    <FormControl>
+                                    <div className="h-48 pb-10">
+                                        <RichTextEditor value={field.value} onChange={field.onChange} />
+                                    </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                             <FormField
+                              control={form.control}
+                              name={`changes.${index}.image`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="sr-only">Image URL</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="Optional image URL (e.g. https://placehold.co/400.png)" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
                       </div>
                       <Button
                         type="button"
@@ -379,7 +395,7 @@ export default function VersionsPage() {
                   variant="outline"
                   size="sm"
                   className="mt-4"
-                  onClick={() => append({ type: 'improvement', description: '' })}
+                  onClick={() => append({ type: 'improvement', description: '', image: '' })}
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Add Change
@@ -436,9 +452,12 @@ export default function VersionsPage() {
                                             <div className="mt-1">
                                                 {versionIcons[change.type]}
                                             </div>
-                                             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground"
-                                                dangerouslySetInnerHTML={{ __html: change.description }}
-                                              />
+                                             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
+                                                <div dangerouslySetInnerHTML={{ __html: change.description }} />
+                                                 {change.image && (
+                                                    <img src={change.image} alt="Changelog image" className="mt-2 rounded-md border max-w-xs" />
+                                                 )}
+                                              </div>
                                         </li>
                                     ))}
                                 </ul>
@@ -537,20 +556,34 @@ export default function VersionsPage() {
                                 </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={editForm.control}
-                                name={`changes.${index}.description`}
-                                render={({ field }) => (
-                                <FormItem className="md:col-span-4">
-                                     <FormLabel className="sr-only">Description</FormLabel>
-                                    <FormControl>
-                                        <div className="h-48 pb-10">
-                                            <RichTextEditor value={field.value} onChange={field.onChange} />
-                                        </div>
-                                    </FormControl>
-                                </FormItem>
-                                )}
-                            />
+                            <div className="md:col-span-4 space-y-4">
+                                <FormField
+                                    control={editForm.control}
+                                    name={`changes.${index}.description`}
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="sr-only">Description</FormLabel>
+                                        <FormControl>
+                                            <div className="h-48 pb-10">
+                                                <RichTextEditor value={field.value} onChange={field.onChange} />
+                                            </div>
+                                        </FormControl>
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={editForm.control}
+                                    name={`changes.${index}.image`}
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="sr-only">Image URL</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Optional image URL" {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
                            </div>
                            <Button type="button" variant="destructive" size="icon" onClick={() => editRemove(index)} className="mt-1">
                                <Trash2 className="h-4 w-4" />
@@ -558,7 +591,7 @@ export default function VersionsPage() {
                         </div>
                         ))}
                     </div>
-                     <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => editAppend({ type: 'improvement', description: '' })}>
+                     <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => editAppend({ type: 'improvement', description: '', image: '' })}>
                         <PlusCircle className="mr-2 h-4 w-4" /> Add Change
                     </Button>
                 </div>
