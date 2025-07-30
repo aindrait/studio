@@ -58,7 +58,7 @@ export default function Home() {
 
         setModules(fetchedModules);
         setCategories(fetchedCategories);
-        setAppSettings(fetchedSettings ?? { appName: "MDS Manual" });
+        setAppSettings(fetchedSettings ?? { appName: "ModuleMaestro" });
 
 
         const welcomeModule = fetchedModules.find(m => m.isWelcome);
@@ -135,15 +135,17 @@ export default function Home() {
               <p className="text-xs text-sidebar-foreground/80">{appSettings?.appSubtitle}</p>
             </div>
           </div>
-           <div className="relative mt-4">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search modules..."
-                className="pl-8 bg-sidebar-input"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+        </SidebarHeader>
+         <SidebarHeader className="border-b border-sidebar-background">
+             <div className="relative mt-2">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search modules..."
+                  className="pl-8 bg-sidebar-input"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
         </SidebarHeader>
         <SidebarContent className="p-4">
           <SidebarMenu>
@@ -153,7 +155,6 @@ export default function Home() {
             <Accordion
               type="multiple"
               className="w-full"
-              defaultValue={categories.map(c => c.name)}
             >
               {categories.map((category) => {
                 const categoryModules = modulesByCategory[category.name] || [];
