@@ -121,58 +121,21 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
 
       <div className="lg:col-span-1">
         <Card>
-          <CardHeader>
-            <CardTitle className="font-headline text-xl">
-              Version History
-            </CardTitle>
-            <CardDescription>
-              Updates, improvements, and fixes.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             {module.versions.length > 0 ? (
-                <Accordion type="single" collapsible className="w-full" defaultValue={`item-${visibleVersions[0]?.version}`}>
-                {visibleVersions.map((version) => (
-                    <AccordionItem
-                    key={version.version}
-                    value={`item-${version.version}`}
-                    >
-                    <AccordionTrigger>
-                        <div className="flex flex-col items-start">
-                        <span className="font-semibold">v{version.version}</span>
-                        <span className="text-xs text-muted-foreground">
-                            {version.date}
-                        </span>
-                        </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <ul className="space-y-2">
-                        {version.changes.map((change, index) => (
-                            <li key={index} className="flex items-start gap-3">
-                            <div className="mt-1">
-                                {versionIcons[change.type]}
-                            </div>
-                             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground"
-                                dangerouslySetInnerHTML={{ __html: change.description }}
-                              />
-                            </li>
-                        ))}
-                        </ul>
-                    </AccordionContent>
-                    </AccordionItem>
-                ))}
-                </Accordion>
-             ) : (
-                <p className="text-sm text-center text-muted-foreground py-4">No version history found.</p>
-             )}
-          </CardContent>
-            {hasMoreVersions && (
-            <CardFooter>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="space-y-1.5">
+                <CardTitle className="font-headline text-xl">
+                Version History
+                </CardTitle>
+                <CardDescription>
+                Updates, improvements, and fixes.
+                </CardDescription>
+            </div>
+             {hasMoreVersions && (
                  <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="outline" className="w-full">
+                        <Button variant="outline" size="sm">
                             <History className="mr-2 h-4 w-4" />
-                            View Full Changelog
+                            View All
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[625px]">
@@ -217,10 +180,48 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-            </CardFooter>
             )}
+          </CardHeader>
+          <CardContent>
+             {module.versions.length > 0 ? (
+                <Accordion type="single" collapsible className="w-full" defaultValue={`item-${visibleVersions[0]?.version}`}>
+                {visibleVersions.map((version) => (
+                    <AccordionItem
+                    key={version.version}
+                    value={`item-${version.version}`}
+                    >
+                    <AccordionTrigger>
+                        <div className="flex flex-col items-start">
+                        <span className="font-semibold">v{version.version}</span>
+                        <span className="text-xs text-muted-foreground">
+                            {version.date}
+                        </span>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <ul className="space-y-2">
+                        {version.changes.map((change, index) => (
+                            <li key={index} className="flex items-start gap-3">
+                            <div className="mt-1">
+                                {versionIcons[change.type]}
+                            </div>
+                             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground"
+                                dangerouslySetInnerHTML={{ __html: change.description }}
+                              />
+                            </li>
+                        ))}
+                        </ul>
+                    </AccordionContent>
+                    </AccordionItem>
+                ))}
+                </Accordion>
+             ) : (
+                <p className="text-sm text-center text-muted-foreground py-4">No version history found.</p>
+             )}
+          </CardContent>
         </Card>
       </div>
     </div>
   );
 }
+
