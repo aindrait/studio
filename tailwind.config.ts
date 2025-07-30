@@ -58,16 +58,13 @@ export default {
           DEFAULT: 'hsl(var(--sidebar-background))',
           background: 'hsl(var(--sidebar-background))',
           foreground: 'hsl(var(--sidebar-foreground))',
-          primary: {
-            DEFAULT: 'hsl(var(--sidebar-primary))',
-            foreground: 'hsl(var(--sidebar-primary-foreground))',
-          },
           accent: {
-            DEFAULT: 'hsl(var(--sidebar-accent))',
-            foreground: 'hsl(var(--sidebar-accent-foreground))',
+            DEFAULT: 'hsl(var(--sidebar-accent, var(--accent)))',
+            foreground: 'hsl(var(--sidebar-accent-foreground, var(--accent-foreground)))',
           },
-          border: 'hsl(var(--sidebar-border))',
-          ring: 'hsl(var(--sidebar-ring))',
+          border: 'hsl(var(--sidebar-border, var(--border)))',
+          ring: 'hsl(var(--sidebar-ring, var(--ring)))',
+          input: 'hsl(var(--sidebar-input, var(--input)))',
         },
       },
       borderRadius: {
@@ -101,3 +98,5 @@ export default {
   },
   plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
 } satisfies Config;
+
+    

@@ -4,35 +4,29 @@
 
 @layer base {
   :root {
-    --background: 0 0% 95%; /* #f3f3f3 */
-    --foreground: 227 25% 25%; /* #2f3a53 */
+    --background: 204 14% 96%; /* #f2f2f2 */
+    --foreground: 198 44% 16%; /* #2f3a53 */
     --card: 0 0% 100%; /* #ffffff */
-    --card-foreground: 227 25% 25%; /* #2f3a53 */
+    --card-foreground: 198 44% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 227 25% 25%;
-    --primary: 203 73% 32%; /* #16618c */
-    --primary-foreground: 0 0% 100%; /* #ffffff */
-    --secondary: 208 31% 87%; /* #c8d8e4 */
-    --secondary-foreground: 227 25% 25%;
-    --muted: 0 0% 95%; /* #f3f3f3 */
-    --muted-foreground: 227 25% 45%;
-    --accent: 208 31% 91%; /* a lighter #c8d8e4 */
-    --accent-foreground: 227 25% 25%;
+    --popover-foreground: 198 44% 16%;
+    --primary: 169 33% 52%; /* #52ab98 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 25% 84%; /* #c8d8e4 */
+    --secondary-foreground: 198 44% 16%;
+    --muted: 210 25% 96%;
+    --muted-foreground: 198 44% 46%;
+    --accent: 210 25% 91%;
+    --accent-foreground: 198 44% 16%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 208 31% 87%; /* #c8d8e4 */
-    --input: 208 31% 93%; /* a lighter #c8d8e4 */
-    --ring: 203 73% 32%; /* #16618c */
+    --border: 210 25% 84%;
+    --input: 0 0% 100%;
+    --ring: 169 33% 52%;
     --radius: 0.5rem;
 
-    --sidebar-background: 227 25% 25%; /* #2f3a53 */
-    --sidebar-foreground: 0 0% 95%; /* #f3f3f3 */
-    --sidebar-primary: 203 73% 32%; /* #16618c */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 227 25% 35%; /* a lighter #2f3a53 */
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 227 25% 35%;
-    --sidebar-ring: 203 73% 32%;
+    --sidebar-background: 198 44% 16%; /* #2b6777 */
+    --sidebar-foreground: 204 14% 95%; /* #f2f2f2 */
   }
  
   .dark {
@@ -58,12 +52,6 @@
 
     --sidebar-background: 222 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 167 36% 50%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 167 36% 50%;
   }
 }
  
@@ -103,3 +91,5 @@
   .prose .ql-size-large { font-size: 1.5em; }
   .prose .ql-size-huge { font-size: 2.25em; }
 }
+
+    
