@@ -15,7 +15,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
 import { type Module } from "@/lib/types";
 import {
@@ -122,12 +121,12 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
       <div className="lg:col-span-1">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <div className="space-y-1.5">
+             <div className="space-y-1.5">
                 <CardTitle className="font-headline text-xl">
                 Version History
                 </CardTitle>
                 <CardDescription>
-                Updates, improvements, and fixes.
+                Updates and fixes.
                 </CardDescription>
             </div>
              {hasMoreVersions && (
