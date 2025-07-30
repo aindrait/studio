@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuill } from 'react-quilljs';
 import 'quill/dist/quill.snow.css';
-import ImageResize, { FloatStyle, Resize, DisplaySize } from 'quill-image-resize-module-ts';
+import ImageResize, { FloatStyle } from 'quill-image-resize-module-ts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -46,6 +46,9 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
             ['link', 'image'],
             ['clean']
         ],
+        imageResize: {
+            modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
+        }
     },
     formats: [
         "header", "font", "size",
@@ -57,26 +60,22 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
     theme: 'snow'
   });
 
-  useEffect(() => {
-    if (Quill && !quill) {
+  React.useEffect(() => {
+    if (Quill && !Quill.imports['modules/imageResize']) {
         Quill.register('modules/imageResize', ImageResize);
         Quill.register('formats/float', FloatStyle);
     }
     if (quill) {
+      if (value && value !== quill.root.innerHTML) {
+        quill.clipboard.dangerouslyPasteHTML(value);
+      }
       quill.on('text-change', (_delta, _oldDelta, source) => {
          if (source === 'user') {
             onChange(quill.root.innerHTML);
         }
       });
     }
-  }, [quill, Quill, onChange]);
-
-  useEffect(() => {
-    if (quill && value && value !== quill.root.innerHTML) {
-      quill.clipboard.dangerouslyPasteHTML(value);
-    }
-  }, [quill, value]);
-
+  }, [quill, Quill, onChange, value]);
 
   return (
     <div style={{ width: '100%', height: '100%' }}>
@@ -269,5 +268,4 @@ export default function NewModulePage() {
     </Card>
   );
 }
-
     
