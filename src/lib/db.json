@@ -127,8 +127,19 @@
       "tags": [
         "test"
       ],
-      "content": "<p>Test Modules</p>",
-      "versions": []
+      "content": "<h2>Kesimpulan</h2><ol><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span><strong>Firebase Studio prototyping</strong> memang tidak bisa diandalkan 100% untuk testing DOM root manipulation.</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Kode Anda sudah jauh lebih rapi dan tidak akan error di lingkungan normal.</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Untuk benar-benar bebas error di semua konteks (sandboxed iframe, SSR), perlu penyesuaian di akses DOM dan classList.</li><li data-list=\"bullet\"><span class=\"ql-ui\" contenteditable=\"false\"></span>Evaluasi juga penggunaan setTheme(\"light theme-zinc\") vs format eksplisit untuk jangka panjang.</li></ol><p><br></p><p>Kalau butuh versi refactor yang lebih modular dan fleksibel, saya bisa bantu buatkan fungsi setTheme({ base, variant }) lengkap.</p>",
+      "versions": [
+        {
+          "version": "0.0.1",
+          "date": "2025-07-15",
+          "changes": [
+            {
+              "type": "improvement",
+              "description": "Test add new module"
+            }
+          ]
+        }
+      ]
     }
   ],
   "categories": [

@@ -96,6 +96,10 @@ const ModuleSchema = z.object({
   })),
 });
 
+const ChangePasswordSchema = z.object({
+    currentPassword: z.string(),
+    newPassword: z.string(),
+});
 
 // User Flows
 export const loginUserFlow = ai.defineFlow({
@@ -184,6 +188,32 @@ export const deleteAdminUserFlow = ai.defineFlow({
         return true;
     }
     return false;
+});
+
+export const changePasswordFlow = ai.defineFlow({
+    name: 'changePasswordFlow',
+    inputSchema: ChangePasswordSchema,
+    outputSchema: z.boolean(),
+}, async ({ currentPassword, newPassword }) => {
+    const session = await getSession();
+    if (!session) {
+        throw new Error('Unauthorized: You must be logged in to change your password.');
+    }
+
+    const db = await readDb();
+    const userIndex = db.users.findIndex(u => u.id === session.id);
+    if (userIndex === -1) {
+        throw new Error('User not found.');
+    }
+    
+    const user = db.users[userIndex];
+    if (user.password !== currentPassword) {
+        throw new Error('Incorrect current password.');
+    }
+
+    db.users[userIndex].password = newPassword;
+    await writeDb(db);
+    return true;
 });
 
 
@@ -404,4 +434,8 @@ export async function updateAdminUser(user: AdminUser): Promise<Omit<AdminUser, 
 
 export async function deleteAdminUser(id: string): Promise<boolean> {
     return await deleteAdminUserFlow(id);
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+    return await changePasswordFlow({ currentPassword, newPassword });
 }
