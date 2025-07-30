@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuill } from 'react-quilljs';
 import 'quill/dist/quill.snow.css';
+import ImageResize from 'quill-image-resize-module-ts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -32,7 +33,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 
 function RichTextEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const { quill, quillRef } = useQuill({
+  const { quill, quillRef, Quill } = useQuill({
     modules: {
         toolbar: [
             [{ 'font': [] }],
@@ -41,19 +42,28 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
             ['bold', 'italic', 'underline', 'strike'],
             [{ 'color': [] }, { 'background': [] }],
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
             [{ 'indent': '-1'}, { 'indent': '+1' }],
             ['link', 'image'],
             ['clean']
         ],
+        imageResize: {
+          parchment: Quill?.import('parchment'),
+        },
     },
     formats: [
         "header", "font", "size",
         "bold", "italic", "underline", "strike", "blockquote",
-        "list", "indent",
-        "link", "image", "color", "background"
+        "list", "indent", "align",
+        "link", "image", "color", "background",
+        "float", "height", "width"
     ],
     theme: 'snow'
   });
+
+  if (Quill && !quill) {
+    Quill.register('modules/imageResize', ImageResize);
+  }
 
   React.useEffect(() => {
     if (quill) {
