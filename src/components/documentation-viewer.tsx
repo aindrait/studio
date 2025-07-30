@@ -139,7 +139,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                             View All
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[625px]">
+                    <DialogContent className="sm:max-w-3xl">
                         <DialogHeader>
                             <DialogTitle>Full Changelog for {module.name}</DialogTitle>
                             <DialogDescription>
