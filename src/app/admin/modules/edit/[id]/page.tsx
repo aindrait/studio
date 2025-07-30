@@ -6,10 +6,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useQuill } from 'react-quilljs';
+import dynamic from 'next/dynamic';
 import 'quill/dist/quill.snow.css';
-import ImageResize from 'quill-image-resize-module-ts';
-import { FloatStyle } from 'quill-image-resize-module-ts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -22,6 +20,8 @@ import type { Module, Category } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 
+const RichTextEditor = dynamic(() => import('@/components/rich-text-editor'), { ssr: false });
+
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
@@ -31,60 +31,6 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-
-function RichTextEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const { quill, quillRef, Quill } = useQuill({
-    modules: {
-        toolbar: [
-            [{ 'font': [] }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'align': [] }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            ['link', 'image'],
-            ['clean']
-        ],
-        imageResize: {
-            modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
-        }
-    },
-    formats: [
-        "header", "font", "size",
-        "bold", "italic", "underline", "strike", "blockquote",
-        "list", "indent", "align",
-        "link", "image", "color", "background",
-        "float", "height", "width"
-    ],
-    theme: 'snow'
-  });
-
-  React.useEffect(() => {
-    if (Quill && !Quill.imports['modules/imageResize']) {
-        Quill.register('modules/imageResize', ImageResize);
-        Quill.register('formats/float', FloatStyle);
-    }
-    if (quill) {
-      if (value && value !== quill.root.innerHTML) {
-          quill.clipboard.dangerouslyPasteHTML(value);
-      }
-      quill.on('text-change', (_delta, _oldDelta, source) => {
-        if (source === 'user') {
-            onChange(quill.root.innerHTML);
-        }
-      });
-    }
-  }, [quill, Quill, onChange, value]);
-
-  return (
-    <div style={{ width: '100%', height: '100%' }}>
-      <div ref={quillRef} />
-    </div>
-  );
-}
 
 
 export default function EditModulePage() {
