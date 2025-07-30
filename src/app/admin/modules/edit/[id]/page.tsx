@@ -8,8 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuill } from 'react-quilljs';
 import 'quill/dist/quill.snow.css';
-import ImageResize from 'quill-image-resize-module-ts';
-import { FloatStyle } from 'quill-image-resize-module-ts';
+import ImageResize, { FloatStyle } from 'quill-image-resize-module-ts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -48,10 +47,6 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
             ['link', 'image'],
             ['clean']
         ],
-        imageResize: {
-          parchment: Quill?.import('parchment'),
-          modules: [ 'Resize', 'DisplaySize', 'Toolbar' ]
-        }
     },
     formats: [
         "header", "font", "size",
