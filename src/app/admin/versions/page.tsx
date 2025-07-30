@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,10 +12,10 @@ import 'quill/dist/quill.snow.css';
 
 
 import { cn } from "@/lib/utils";
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -25,7 +25,6 @@ import type { Module, Version } from '@/lib/types';
 import { PlusCircle, Trash2, Pencil, MoreHorizontal, ArrowUpCircle, Wrench } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,13 +53,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const editFormSchema = z.object({
-    version: z.string().min(1, "Version number is required."),
-    date: z.date({ required_error: "A date is required." }),
-    changes: z.array(versionChangeSchema).min(1, "At least one change is required."),
-});
-
-type EditFormValues = z.infer<typeof editFormSchema>;
 
 const versionIcons = {
   new: <PlusCircle className="h-4 w-4 text-green-500" />,
@@ -73,10 +65,13 @@ export default function VersionsPage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  const [isEditing, setIsEditing] = useState(false);
   const [editingVersion, setEditingVersion] = useState<Version | null>(null);
+
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [versionToDelete, setVersionToDelete] = useState<string | null>(null);
+  const formCardRef = useRef<HTMLDivElement>(null);
 
 
   const form = useForm<FormValues>({
@@ -89,31 +84,21 @@ export default function VersionsPage() {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, replace } = useFieldArray({
     control: form.control,
     name: "changes",
   });
 
-  // Form for editing a version
-  const editForm = useForm<EditFormValues>({
-     resolver: zodResolver(editFormSchema),
-     defaultValues: {
-      version: '',
-      date: new Date(),
-      changes: [],
-    },
-  });
-
-  const { fields: editFields, append: editAppend, remove: editRemove } = useFieldArray({
-      control: editForm.control,
-      name: "changes"
-  });
 
   async function fetchModulesData() {
     try {
       setLoading(true);
       const fetchedModules = await getModules();
       setModules(fetchedModules);
+      if (selectedModule) {
+        const updatedSelectedModule = fetchedModules.find(m => m.id === selectedModule.id) || null;
+        setSelectedModule(updatedSelectedModule);
+      }
     } catch (error) {
       toast({ variant: "destructive", title: "Failed to load modules" });
     } finally {
@@ -130,82 +115,71 @@ export default function VersionsPage() {
     form.setValue('moduleId', moduleId);
     const module = modules.find(m => m.id === moduleId);
     setSelectedModule(module || null);
+    // Reset form when module changes
+    handleCancelEdit();
   }
 
   const onSubmit = async (values: FormValues) => {
-    const targetModule = modules.find(m => m.id === values.moduleId);
+     const targetModule = modules.find(m => m.id === values.moduleId);
     if (!targetModule) {
       toast({ variant: "destructive", title: "Module not found" });
       return;
     }
-
-    const newVersion: Version = {
-      version: values.version,
-      date: format(values.date, "yyyy-MM-dd"),
-      changes: values.changes,
-    };
-
-    const updatedModule = {
-      ...targetModule,
-      versions: [newVersion, ...targetModule.versions],
-    };
-
+    
     try {
-      await updateModule(updatedModule);
-      toast({ title: "Version Added", description: `Successfully added v${values.version} to ${targetModule.name}.` });
-      form.reset({
-        moduleId: values.moduleId,
-        version: '',
-        date: new Date(),
-        changes: [{ type: 'improvement', description: '', image: '' }],
-      });
+      if (isEditing && editingVersion) {
+         const updatedVersion: Version = { ...values, date: format(values.date, "yyyy-MM-dd") };
+         const updatedVersions = targetModule.versions.map(v => 
+            v.version === editingVersion.version ? updatedVersion : v
+         );
+         const updatedModule = { ...targetModule, versions: updatedVersions };
+         await updateModule(updatedModule);
+         toast({ title: "Version Updated" });
+
+      } else {
+         const newVersion: Version = {
+            version: values.version,
+            date: format(values.date, "yyyy-MM-dd"),
+            changes: values.changes,
+         };
+         const updatedModule = { ...targetModule, versions: [newVersion, ...targetModule.versions] };
+         await updateModule(updatedModule);
+         toast({ title: "Version Added" });
+      }
+
+      handleCancelEdit(); // Reset form to "new" mode
       await fetchModulesData(); // Refetch to update the list
-      const updatedMod = await getModules().then(mods => mods.find(m => m.id === values.moduleId));
-      setSelectedModule(updatedMod || null);
+
     } catch (error) {
-      toast({ variant: "destructive", title: "Update Failed", description: "Could not add the new version." });
+       toast({ variant: "destructive", title: "Save Failed", description: "Could not save the version." });
     }
   };
-
-  const handleOpenEditDialog = (version: Version) => {
-    setEditingVersion(version);
-    editForm.reset({
-        version: version.version,
-        date: new Date(version.date), // Make sure date string is converted to Date object
-        changes: version.changes
-    });
-    setIsEditDialogOpen(true);
-  }
   
-  const handleEditSubmit = async (values: EditFormValues) => {
-    if (!selectedModule || !editingVersion) return;
+  const handleStartEdit = (version: Version) => {
+    formCardRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setIsEditing(true);
+    setEditingVersion(version);
+    form.reset({
+      moduleId: selectedModule?.id || '',
+      version: version.version,
+      date: new Date(version.date),
+      changes: version.changes
+    });
+    replace(version.changes);
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingVersion(null);
+    form.reset({
+      moduleId: selectedModule?.id || '',
+      version: '',
+      date: new Date(),
+      changes: [{ type: 'improvement', description: '', image: '' }],
+    });
+    replace([{ type: 'improvement', description: '', image: '' }]);
+  };
 
-    const updatedVersion: Version = {
-      ...values,
-      date: format(values.date, "yyyy-MM-dd"),
-    };
-
-    const updatedVersions = selectedModule.versions.map(v => 
-      v.version === editingVersion.version ? updatedVersion : v
-    );
-
-    const updatedModule = {
-      ...selectedModule,
-      versions: updatedVersions,
-    };
-
-     try {
-      await updateModule(updatedModule);
-      toast({ title: "Version Updated" });
-      setIsEditDialogOpen(false);
-      setEditingVersion(null);
-      await fetchModulesData();
-      const updatedMod = await getModules().then(mods => mods.find(m => m.id === selectedModule.id));
-      setSelectedModule(updatedMod || null);
-    } catch (error) {
-      toast({ variant: "destructive", title: "Update Failed" });
-    }
-  }
 
   const confirmDeleteVersion = (versionNumber: string) => {
     setVersionToDelete(versionNumber);
@@ -235,10 +209,12 @@ export default function VersionsPage() {
 
   return (
     <div className="space-y-8">
-      <Card>
+      <Card ref={formCardRef}>
         <CardHeader>
-          <CardTitle>Add New Version</CardTitle>
-          <CardDescription>Add a new version or changelog entry to an existing module.</CardDescription>
+          <CardTitle>{isEditing ? `Edit Version ${editingVersion?.version}` : 'Add New Version'}</CardTitle>
+          <CardDescription>
+            {isEditing ? `Editing a version for "${selectedModule?.name}".` : "Add a new version or changelog entry to an existing module."}
+          </CardDescription>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -249,7 +225,7 @@ export default function VersionsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Module</FormLabel>
-                    <Select onValueChange={handleModuleSelect} value={field.value} disabled={loading}>
+                    <Select onValueChange={handleModuleSelect} value={field.value} disabled={loading || isEditing}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a module..." />
@@ -405,9 +381,12 @@ export default function VersionsPage() {
                 </Button>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-end">
+            <CardFooter className="flex justify-end gap-2">
+              {isEditing && (
+                <Button type="button" variant="outline" onClick={handleCancelEdit}>Cancel Edit</Button>
+              )}
               <Button type="submit" disabled={form.formState.isSubmitting || !selectedModule}>
-                {form.formState.isSubmitting ? "Saving..." : "Save Version"}
+                {form.formState.isSubmitting ? "Saving..." : (isEditing ? "Save Changes" : "Save Version")}
               </Button>
             </CardFooter>
           </form>
@@ -439,7 +418,7 @@ export default function VersionsPage() {
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={() => handleOpenEditDialog(version)}>
+                                        <DropdownMenuItem onClick={() => handleStartEdit(version)}>
                                             <Pencil className="mr-2 h-4 w-4" /> Edit
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => confirmDeleteVersion(version.version)}>
@@ -475,138 +454,6 @@ export default function VersionsPage() {
         </Card>
       )}
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[625px]">
-          <DialogHeader>
-            <DialogTitle>Edit Version {editingVersion?.version}</DialogTitle>
-          </DialogHeader>
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(handleEditSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                        control={editForm.control}
-                        name="version"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Version Number</FormLabel>
-                                <FormControl><Input {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                      control={editForm.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Release Date</FormLabel>
-                           <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-full pl-3 text-left font-normal",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date > new Date() || date < new Date("1900-01-01")
-                                }
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                </div>
-                 <div>
-                    <FormLabel>Changes</FormLabel>
-                    <div className="space-y-4 mt-2">
-                        {editFields.map((field, index) => (
-                        <div key={field.id} className="flex items-start gap-4 p-4 border rounded-md">
-                           <div className="grid grid-cols-1 md:grid-cols-6 gap-4 flex-1">
-                             <FormField
-                                control={editForm.control}
-                                name={`changes.${index}.type`}
-                                render={({ field }) => (
-                                <FormItem className="md:col-span-2">
-                                    <FormLabel className="sr-only">Change Type</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="new">New</SelectItem>
-                                            <SelectItem value="improvement">Improvement</SelectItem>
-                                            <SelectItem value="fix">Fix</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </FormItem>
-                                )}
-                            />
-                            <div className="md:col-span-4 space-y-4">
-                                <FormField
-                                    control={editForm.control}
-                                    name={`changes.${index}.description`}
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="sr-only">Description</FormLabel>
-                                        <FormControl>
-                                            <div className="h-48 pb-12">
-                                              <RichTextEditor value={field.value} onChange={field.onChange} />
-                                            </div>
-                                        </FormControl>
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={editForm.control}
-                                    name={`changes.${index}.image`}
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="sr-only">Image URL</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Optional image URL" {...field} />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                           </div>
-                           <Button type="button" variant="destructive" size="icon" onClick={() => editRemove(index)} className="mt-1">
-                               <Trash2 className="h-4 w-4" />
-                           </Button>
-                        </div>
-                        ))}
-                    </div>
-                     <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => editAppend({ type: 'improvement', description: '', image: '' })}>
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add Change
-                    </Button>
-                </div>
-              <DialogFooter>
-                <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-                <Button type="submit">Save Changes</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
           <AlertDialogContent>
               <AlertDialogHeader>
