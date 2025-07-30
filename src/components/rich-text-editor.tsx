@@ -10,22 +10,36 @@ interface RichTextEditorProps {
   onChange: (value: string) => void;
 }
 
+const modules = {
+  toolbar: [
+    [{ 'font': [] }, { 'size': [] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'script': 'sub'}, { 'script': 'super' }],
+    [{ 'header': '1' }, { 'header': '2' }, 'blockquote', 'code-block'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'indent': '-1'}, { 'indent': '+1' }],
+    [{ 'direction': 'rtl' }, { 'align': [] }],
+    ['link', 'image'],
+    ['clean']
+  ],
+};
+
+const formats = [
+  'font', 'size',
+  'bold', 'italic', 'underline', 'strike',
+  'color', 'background',
+  'script',
+  'header', 'blockquote', 'code-block',
+  'list', 'bullet', 'indent',
+  'direction', 'align',
+  'link', 'image'
+];
+
+
 export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   const { quill, quillRef } = useQuill({
-    modules: {
-        toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            ['link'],
-            ['clean']
-        ],
-    },
-    formats: [
-        "bold", "italic", "underline", "strike",
-        "list", "indent", 
-        "link",
-    ],
+    modules: modules,
+    formats: formats,
     theme: 'snow'
   });
 
