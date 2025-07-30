@@ -240,7 +240,7 @@ export default function CategoriesPage() {
               <TableBody>
                 {categories.map((category, index) => (
                   <TableRow key={category.name}>
-                    <TableCell className="font-medium">{category.name}</TableCell>
+                    <TableCell className="font-medium text-left">{category.name}</TableCell>
                      <TableCell>
                         <div className="flex gap-2">
                             <Button variant="ghost" size="icon" onClick={() => handleReorder(index, 'up')} disabled={index === 0 || isEditor}>
