@@ -1,4 +1,8 @@
 {
+  "settings": {
+    "appName": "Mukti Manual System",
+    "appSubtitle": "MDS Plantation"
+  },
   "modules": [
     {
       "id": "auth-core",
@@ -99,7 +103,7 @@
         "orm"
       ],
       "description": "A powerful ORM for seamless database interactions.",
-      "content": "\n      <h3 class=\"font-headline text-lg font-semibold mb-2\">ORM Abstraction</h3>\n      <p class=\"mb-4\">The Database Connector provides a type-safe and intuitive API for interacting with your SQL database. It abstracts away the complexities of raw SQL queries, allowing you to work with JavaScript objects and methods.</p>\n      <img src=\"https://placehold.co/600x350.png\" alt=\"Database schema\" data-ai-hint=\"database schema\" class=\"rounded-lg mb-4\" />\n      <h4 class=\"font-headline text-md font-semibold mb-2\">Supported Databases</h4>\n      <ul class=\"list-disc pl-5 mb-4 space-y-1\">\n        <li>PostgreSQL</li>\n        <li>MySQL</li>\n        <li>SQLite</li>\n      </ul>\n      <p>Features include automatic migrations, connection pooling, and transaction support to ensure your data layer is both robust and performant.</p>\n    ",
+      "content": "\n      <h3 class=\"font-headline text-lg font-semibold mb-2\">ORM Abstraction</h3>\n      <p class=\"mb-4\">The Database Connector provides a type-safe and intuitive API for interacting with your SQL database. It abstracts away the complexities of raw SQL queries, a-llowing you to work with JavaScript objects and methods.</p>\n      <img src=\"https://placehold.co/600x350.png\" alt=\"Database schema\" data-ai-hint=\"database schema\" class=\"rounded-lg mb-4\" />\n      <h4 class=\"font-headline text-md font-semibold mb-2\">Supported Databases</h4>\n      <ul class=\"list-disc pl-5 mb-4 space-y-1\">\n        <li>PostgreSQL</li>\n        <li>MySQL</li>\n        <li>SQLite</li>\n      </ul>\n      <p>Features include automatic migrations, connection pooling, and transaction support to ensure your data layer is both robust and performant.</p>\n    ",
       "versions": [
         {
           "version": "3.1.0",

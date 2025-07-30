@@ -29,11 +29,11 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { type Module, type Category } from "@/lib/types";
+import { type Module, type Category, type AppSettings } from "@/lib/types";
 import { DocumentationViewer } from "@/components/documentation-viewer";
 import { Logo } from "@/components/icons";
 import Link from "next/link";
-import { getModules, getCategories } from "@/ai/flows/module-crud";
+import { getModules, getCategories, getAppSettings } from "@/ai/flows/module-crud";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 export default function Home() {
   const [modules, setModules] = React.useState<Module[]>([]);
   const [categories, setCategories] = React.useState<Category[]>([]);
+  const [appSettings, setAppSettings] = React.useState<AppSettings | null>(null);
   const [search, setSearch] = React.useState("");
   const [selectedModule, setSelectedModule] = React.useState<Module | null>(null);
   const [loading, setLoading] = React.useState(true);
@@ -50,13 +51,16 @@ export default function Home() {
     async function initialFetch() {
       setLoading(true);
       try {
-        const [fetchedModules, fetchedCategories] = await Promise.all([
+        const [fetchedModules, fetchedCategories, fetchedSettings] = await Promise.all([
           getModules(),
           getCategories(),
+          getAppSettings(),
         ]);
 
         setModules(fetchedModules);
         setCategories(fetchedCategories);
+        setAppSettings(fetchedSettings ?? { appName: "MDS Manual" });
+
 
         const welcomeModule = fetchedModules.find(m => m.isWelcome);
         if (welcomeModule) {
@@ -127,7 +131,10 @@ export default function Home() {
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Logo className="size-6 text-primary" />
-            <h1 className="text-lg font-semibold font-headline">MDS Manual</h1>
+            <div>
+              <h1 className="text-lg font-semibold font-headline">{appSettings?.appName}</h1>
+              <p className="text-xs text-sidebar-foreground/80">{appSettings?.appSubtitle}</p>
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>

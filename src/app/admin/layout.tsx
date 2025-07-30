@@ -2,7 +2,7 @@
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Logo } from "@/components/icons";
-import { Bot, FileText, Folder, ArrowLeft, GitCommitHorizontal, Users, LogOut } from "lucide-react";
+import { Bot, FileText, Folder, ArrowLeft, GitCommitHorizontal, Users, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/user-nav";
 import { getSession } from "@/lib/session";
@@ -66,6 +66,14 @@ export default async function AdminLayout({
                       <Link href="/admin/users">
                         <Users />
                         Users
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                   <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link href="/admin/settings">
+                        <Settings />
+                        Settings
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

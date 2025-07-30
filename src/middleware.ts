@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 
 const protectedRoutes = ['/admin'];
-const adminOnlyRoutes = ['/admin/categories', '/admin/users'];
+const adminOnlyRoutes = ['/admin/categories', '/admin/users', '/admin/settings'];
 
 export default async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;

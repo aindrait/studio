@@ -33,3 +33,8 @@ export type AdminUser = {
   password?: string; // Should be hashed in a real app. Optional when sending to client.
   role: 'admin' | 'editor';
 }
+
+export type AppSettings = {
+  appName: string;
+  appSubtitle?: string;
+};
