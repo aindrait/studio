@@ -35,14 +35,23 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
   const { quill, quillRef } = useQuill({
     modules: {
         toolbar: [
+            [{ 'font': [] }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
             ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
             [{ 'indent': '-1'}, { 'indent': '+1' }],
             ['link', 'image'],
             ['clean']
         ],
     },
-    formats: ["bold", "italic", "underline", "strike", "list", "indent", "link", "image"],
+    formats: [
+        "header", "font", "size",
+        "bold", "italic", "underline", "strike",
+        "list", "bullet", "indent",
+        "link", "image", "color", "background"
+    ],
     theme: 'snow'
   });
 
