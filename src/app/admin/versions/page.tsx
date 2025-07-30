@@ -246,7 +246,7 @@ export default function VersionsPage() {
                   control={form.control}
                   name="version"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex flex-col">
                       <FormLabel>Version Number</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., 1.2.3" {...field} />
