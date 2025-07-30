@@ -15,6 +15,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
 import { type Module } from "@/lib/types";
 import {
@@ -75,6 +76,8 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
   }
 
   const visibleVersions = module.versions.slice(0, MAX_VERSIONS_VISIBLE);
+  const hasMoreVersions = module.versions.length > MAX_VERSIONS_VISIBLE;
+
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -217,6 +220,13 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                 <p className="text-sm text-center text-muted-foreground py-4">No version history found.</p>
              )}
           </CardContent>
+          {hasMoreVersions && (
+            <CardFooter className="pt-4">
+                <p className="text-xs text-muted-foreground text-center w-full">
+                    Total of {module.versions.length} versions.
+                </p>
+            </CardFooter>
+          )}
         </Card>
       </div>
     </div>
