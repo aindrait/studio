@@ -231,7 +231,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
           {hasMoreVersions && (
             <CardFooter className="pt-4">
                 <p className="text-xs text-muted-foreground text-center w-full">
-                    Total of {module.versions.length} versions.
+                    Showing {visibleVersions.length} of {module.versions.length} versions.
                 </p>
             </CardFooter>
           )}
