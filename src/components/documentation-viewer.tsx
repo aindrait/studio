@@ -52,6 +52,7 @@ const MAX_VERSIONS_VISIBLE = 3;
 
 export function DocumentationViewer({ module }: DocumentationViewerProps) {
   const [isClient, setIsClient] = useState(false);
+  const [isAllVersionsOpen, setIsAllVersionsOpen] = useState(false);
   
   useEffect(() => {
     setIsClient(true);
@@ -139,13 +140,63 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
           </CardHeader>
           <CardContent>
              {module.versions.length > 0 ? (
-                <Dialog>
-                   <DialogTrigger asChild>
-                     <Button variant="outline" size="sm" className="w-full mb-4">
-                       <History className="mr-2 h-4 w-4" /> View All
-                     </Button>
-                   </DialogTrigger>
-                  <Accordion type="single" collapsible className="w-full">
+                <>
+                   {hasMoreVersions && (
+                    <Dialog open={isAllVersionsOpen} onOpenChange={setIsAllVersionsOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full mb-4">
+                                <History className="mr-2 h-4 w-4" /> View All
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-4xl">
+                            <DialogHeader>
+                                <DialogTitle>Full Changelog: {module.name}</DialogTitle>
+                            </DialogHeader>
+                            <div className="max-h-[70vh] overflow-y-auto pr-4">
+                            <Accordion type="single" collapsible className="w-full" defaultValue={`item-${module.versions[0]?.version}`}>
+                                {module.versions.map((version) => (
+                                    <AccordionItem
+                                    key={`modal-${version.version}`}
+                                    value={`item-${version.version}`}
+                                    >
+                                    <AccordionTrigger>
+                                        <div className="flex flex-col items-start">
+                                        <span className="font-semibold">v{version.version}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {version.date}
+                                        </span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <ul className="space-y-4 pl-2">
+                                        {version.changes.map((change, index) => (
+                                            <li key={`modal-change-${index}`} className="flex items-start gap-3">
+                                            <div className="mt-1">
+                                                {versionIcons[change.type]}
+                                            </div>
+                                            <div>
+                                                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: change.description }} />
+                                                {change.image && (
+                                                    <img src={change.image} alt="Changelog image" className="mt-2 rounded-md border max-w-xs" />
+                                                )}
+                                            </div>
+                                            </li>
+                                        ))}
+                                        </ul>
+                                    </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                                </Accordion>
+                            </div>
+                            <DialogFooter>
+                                <DialogClose asChild>
+                                <Button>Close</Button>
+                                </DialogClose>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                   )}
+                  <Accordion type="single" collapsible className="w-full" defaultValue={`item-${module.versions[0]?.version}`}>
                     {module.versions.slice(0, MAX_VERSIONS_VISIBLE).map((version) => (
                         <AccordionItem
                         key={version.version}
@@ -168,9 +219,6 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                                 </div>
                                   <div>
                                     <div className="prose prose-sm dark:prose-invert max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: change.description }} />
-                                    {change.image && (
-                                        <img src={change.image} alt="Changelog image" className="mt-2 rounded-md border max-w-xs" />
-                                    )}
                                   </div>
                                 </li>
                             ))}
@@ -179,54 +227,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                         </AccordionItem>
                     ))}
                   </Accordion>
-
-                  <DialogContent className="sm:max-w-4xl">
-                     <DialogHeader>
-                        <DialogTitle>Full Changelog: {module.name}</DialogTitle>
-                     </DialogHeader>
-                      <div className="max-h-[70vh] overflow-y-auto pr-4">
-                        <Accordion type="single" collapsible className="w-full">
-                           {module.versions.map((version) => (
-                              <AccordionItem
-                              key={`modal-${version.version}`}
-                              value={`item-${version.version}`}
-                              >
-                              <AccordionTrigger>
-                                  <div className="flex flex-col items-start">
-                                  <span className="font-semibold">v{version.version}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                      {version.date}
-                                  </span>
-                                  </div>
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                  <ul className="space-y-4 pl-2">
-                                  {version.changes.map((change, index) => (
-                                      <li key={`modal-change-${index}`} className="flex items-start gap-3">
-                                      <div className="mt-1">
-                                          {versionIcons[change.type]}
-                                      </div>
-                                        <div>
-                                          <div className="prose prose-sm dark:prose-invert max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: change.description }} />
-                                          {change.image && (
-                                              <img src={change.image} alt="Changelog image" className="mt-2 rounded-md border max-w-xs" />
-                                          )}
-                                        </div>
-                                      </li>
-                                  ))}
-                                  </ul>
-                              </AccordionContent>
-                              </AccordionItem>
-                          ))}
-                        </Accordion>
-                      </div>
-                     <DialogFooter>
-                        <DialogClose asChild>
-                           <Button>Close</Button>
-                        </DialogClose>
-                     </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                </>
              ) : (
                 <p className="text-sm text-center text-muted-foreground py-4">No version history found.</p>
              )}

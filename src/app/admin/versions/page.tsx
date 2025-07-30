@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Upload, Trash2 as TrashIcon } from "lucide-react";
 import dynamic from 'next/dynamic';
 import 'quill/dist/quill.snow.css';
 
@@ -72,6 +72,7 @@ export default function VersionsPage() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [versionToDelete, setVersionToDelete] = useState<string | null>(null);
   const formCardRef = useRef<HTMLDivElement>(null);
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
 
   const form = useForm<FormValues>({
@@ -84,10 +85,25 @@ export default function VersionsPage() {
     },
   });
 
-  const { fields, append, remove, replace } = useFieldArray({
+  const { fields, append, remove, replace, update } = useFieldArray({
     control: form.control,
     name: "changes",
   });
+
+  const handleImageUpload = (file: File, index: number) => {
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (e.target?.result) {
+                const currentChange = form.getValues(`changes.${index}`);
+                update(index, { ...currentChange, image: e.target.result as string });
+            }
+        };
+        reader.readAsDataURL(file);
+    } else {
+        toast({ variant: 'destructive', title: 'Invalid File', description: 'Please select an image file.' });
+    }
+  };
 
 
   async function fetchModulesData() {
@@ -342,18 +358,38 @@ export default function VersionsPage() {
                                 </FormItem>
                             )}
                             />
-                             <FormField
-                              control={form.control}
-                              name={`changes.${index}.image`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="sr-only">Image URL</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Optional image URL (e.g. https://placehold.co/400.png)" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
+                            <FormField
+                                control={form.control}
+                                name={`changes.${index}.image`}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="sr-only">Image</FormLabel>
+                                        <FormControl>
+                                            <div className="flex items-center gap-2">
+                                                <Input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    ref={(el) => (fileInputRefs.current[index] = el)}
+                                                    onChange={(e) => e.target.files && handleImageUpload(e.target.files[0], index)}
+                                                />
+                                                <Button type="button" variant="outline" onClick={() => fileInputRefs.current[index]?.click()}>
+                                                    <Upload className="mr-2 h-4 w-4" />
+                                                    Upload Image
+                                                </Button>
+                                                {field.value && (
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <span>Image uploaded</span>
+                                                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => update(index, { ...form.getValues(`changes.${index}`), image: '' })}>
+                                                            <TrashIcon className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
                         </div>
                       </div>
