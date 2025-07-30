@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { UserNav } from "@/components/user-nav";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
+import { getAppSettings } from "@/ai/flows/module-crud";
 
 
 export default async function AdminLayout({
@@ -20,6 +21,7 @@ export default async function AdminLayout({
   }
   
   const isAdmin = session.role === 'admin';
+  const appSettings = await getAppSettings();
 
   return (
     <SidebarProvider>
@@ -28,9 +30,12 @@ export default async function AdminLayout({
           <SidebarHeader>
             <div className="flex items-center gap-2">
               <Logo className="h-6 w-6 text-primary" />
-              <h1 className="text-lg font-semibold font-headline">
-                MDS Manual Admin
-              </h1>
+              <div>
+                <h1 className="text-lg font-semibold font-headline">
+                  {appSettings?.appName || 'MDS Manual'} Admin
+                </h1>
+                <p className="text-xs text-sidebar-foreground/80">{appSettings?.appSubtitle}</p>
+              </div>
             </div>
           </SidebarHeader>
           <SidebarContent>
