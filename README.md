@@ -77,29 +77,30 @@ npm run build
 ```
 Perintah ini akan membuat direktori `.next` yang berisi build aplikasi yang siap di-deploy.
 
-### 5. Menjalankan Aplikasi
+### 5. Menjalankan Aplikasi (Next.js & Genkit)
 
-Setelah proses build selesai, jalankan aplikasi menggunakan server produksi Next.js.
+Aplikasi ini membutuhkan dua proses yang berjalan bersamaan:
+1.  **Server Next.js:** Untuk melayani antarmuka pengguna (UI).
+2.  **Server Genkit:** Untuk menangani semua logika backend panel admin.
 
-```bash
-npm run start
-```
-Secara default, aplikasi akan berjalan di port 3000.
-
-### 6. (Opsional) Menjalankan sebagai Layanan dengan PM2
-
-Untuk menjalankan aplikasi secara terus-menerus sebagai layanan di latar belakang (dan otomatis restart jika terjadi crash), direkomendasikan menggunakan manajer proses seperti `pm2`.
+Untuk menjalankan keduanya secara terus-menerus sebagai layanan di latar belakang (dan otomatis restart jika terjadi *crash*), sangat direkomendasikan menggunakan manajer proses seperti `pm2`.
 
 ```bash
 # Instal pm2 secara global
 sudo npm install pm2 -g
 
-# Jalankan aplikasi Anda menggunakan pm2
-pm2 start npm --name "mds-manual-app" -- start
+# Jalankan aplikasi Next.js menggunakan pm2
+pm2 start npm --name "mds-next-app" -- start
 
-# Lihat status aplikasi Anda
+# Jalankan server Genkit menggunakan pm2
+# Perintah ini menjalankan skrip 'genkit:dev' dari package.json
+pm2 start npm --name "mds-genkit-api" -- run genkit:dev
+
+# Lihat status kedua aplikasi Anda
 pm2 list
 
 # (Opsional) Mengatur pm2 agar otomatis berjalan saat server startup
 pm2 startup
 ```
+
+Dengan konfigurasi ini, `pm2` akan memastikan kedua bagian penting dari aplikasi Anda tetap berjalan.
