@@ -136,7 +136,7 @@ export default function Home() {
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search modules..."
-                className="pl-8"
+                className="pl-8 bg-input"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -162,7 +162,7 @@ export default function Home() {
                     value={category.name}
                     className="border-none"
                   >
-                    <AccordionTrigger className="px-2 py-1 text-sm font-medium hover:no-underline hover:bg-accent rounded-md">
+                    <AccordionTrigger className="px-2 py-1 text-sm font-medium hover:no-underline hover:bg-sidebar-accent rounded-md">
                       <div className="flex items-center gap-2">
                         <LayoutGrid className="w-4 h-4" />
                         <span>{category.name}</span>
