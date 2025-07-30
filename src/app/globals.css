@@ -94,6 +94,10 @@
   .prose .ql-size-small { font-size: 0.75em; }
   .prose .ql-size-large { font-size: 1.5em; }
   .prose .ql-size-huge { font-size: 2.25em; }
+
+  .prose .ql-align-center { text-align: center; }
+  .prose .ql-align-right { text-align: right; }
+  .prose .ql-align-justify { text-align: justify; }
 }
 
     
