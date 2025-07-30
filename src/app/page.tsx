@@ -135,10 +135,7 @@ export default function Home() {
               <p className="text-xs text-sidebar-foreground/80">{appSettings?.appSubtitle}</p>
             </div>
           </div>
-        </SidebarHeader>
-        <SidebarContent className="p-4">
-          <SidebarMenu>
-            <div className="relative mb-4">
+           <div className="relative mt-4">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search modules..."
@@ -147,12 +144,16 @@ export default function Home() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-             {loading ? (
+        </SidebarHeader>
+        <SidebarContent className="p-4">
+          <SidebarMenu>
+            {loading ? (
               <p className="p-2 text-sm text-muted-foreground">Loading...</p>
             ) : (
             <Accordion
               type="multiple"
               className="w-full"
+              defaultValue={categories.map(c => c.name)}
             >
               {categories.map((category) => {
                 const categoryModules = modulesByCategory[category.name] || [];
@@ -182,7 +183,7 @@ export default function Home() {
                             <SidebarMenuButton
                               onClick={() => setSelectedModule(module)}
                               isActive={selectedModule?.id === module.id}
-                              className={cn("w-full justify-start", 
+                              className={cn("w-full justify-start text-xs", 
                                 search && filteredModuleIds.has(module.id) && "ring-2 ring-primary/50"
                               )}
                             >
