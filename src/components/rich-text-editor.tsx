@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -20,6 +19,7 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
             ['bold', 'italic', 'underline', 'strike'],
             [{ 'color': [] }, { 'background': [] }],
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['blockquote'],
             [{ 'align': [] }],
             [{ 'indent': '-1'}, { 'indent': '+1' }],
             ['link', 'image'],
@@ -28,13 +28,12 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
     },
     formats: [
         "header", "font", "size",
-        "bold", "italic", "underline", "strike", "blockquote",
-        "list", "bullet", "indent", "align",
+        "bold", "italic", "underline", "strike",
+        "list", "indent", "align",
         "link", "image", "color", "background"
     ],
     theme: 'snow'
   });
-
 
   React.useEffect(() => {
     if (quill) {
