@@ -136,12 +136,12 @@ export default function Home() {
             </div>
           </div>
         </SidebarHeader>
-         <SidebarHeader className="border-b border-sidebar-background">
+         <SidebarHeader className="border-b border-sidebar-border">
              <div className="relative mt-2">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Search modules..."
-                  className="pl-8 bg-sidebar-input"
+                  className="pl-8 bg-sidebar-input text-sidebar-foreground"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />

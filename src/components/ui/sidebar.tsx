@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -341,7 +342,7 @@ const SidebarInput = React.forwardRef<
       ref={ref}
       data-sidebar="input"
       className={cn(
-        "h-8 w-full bg-input shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        "h-8 w-full bg-sidebar-input text-sidebar-foreground shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring dark:bg-sidebar-input dark:text-sidebar-foreground",
         className
       )}
       {...props}
