@@ -47,9 +47,6 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
             ['link', 'image'],
             ['clean']
         ],
-        imageResize: {
-          parchment: Quill?.import('parchment'),
-        },
     },
     formats: [
         "header", "font", "size",
@@ -61,11 +58,10 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
     theme: 'snow'
   });
 
-  if (Quill && !quill) {
-    Quill.register('modules/imageResize', ImageResize);
-  }
-
   React.useEffect(() => {
+    if (Quill && !quill) {
+      Quill.register('modules/imageResize', ImageResize);
+    }
     if (quill) {
       quill.on('text-change', (_delta, _oldDelta, source) => {
         if (source === 'user') {
@@ -73,7 +69,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
         }
       });
     }
-  }, [quill, onChange]);
+  }, [quill, Quill, onChange]);
 
   React.useEffect(() => {
     if (quill && value !== quill.root.innerHTML) {
