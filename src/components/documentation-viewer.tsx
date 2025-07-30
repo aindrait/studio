@@ -75,7 +75,6 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
   }
 
   const visibleVersions = module.versions.slice(0, MAX_VERSIONS_VISIBLE);
-  const hasMoreVersions = module.versions.length > MAX_VERSIONS_VISIBLE;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -131,7 +130,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
             </div>
           </CardHeader>
           <CardContent>
-             {hasMoreVersions && (
+             {module.versions.length > 0 && (
                  <Dialog>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="sm" className="w-full mb-4">
