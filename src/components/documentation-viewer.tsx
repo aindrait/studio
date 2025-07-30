@@ -100,7 +100,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
             )}
             {isClient && (
               <div
-                className="prose prose-sm max-w-none text-foreground"
+                className="prose prose-sm dark:prose-invert max-w-none text-foreground"
                 dangerouslySetInnerHTML={{ __html: module.content }}
               />
             )}
