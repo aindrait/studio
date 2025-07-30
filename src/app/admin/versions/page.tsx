@@ -2,11 +2,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
+import dynamic from 'next/dynamic';
+import 'quill/dist/quill.snow.css';
+
 
 import { cn } from "@/lib/utils";
 import { Button } from '@/components/ui/button';
@@ -33,7 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Textarea } from '@/components/ui/textarea';
+const RichTextEditor = dynamic(() => import('@/components/rich-text-editor'), { ssr: false });
 
 
 const versionChangeSchema = z.object({
@@ -355,7 +358,9 @@ export default function VersionsPage() {
                                 <FormItem>
                                     <FormLabel className="sr-only">Description</FormLabel>
                                     <FormControl>
-                                    <Textarea placeholder="Describe the change..." {...field} />
+                                      <div className="h-48 pb-12">
+                                        <RichTextEditor value={field.value} onChange={field.onChange} />
+                                      </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -451,7 +456,7 @@ export default function VersionsPage() {
                                                 {versionIcons[change.type]}
                                             </div>
                                              <div>
-                                                <p>{change.description}</p>
+                                                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: change.description }} />
                                                  {change.image && (
                                                     <img src={change.image} alt="Changelog image" className="mt-2 rounded-md border max-w-xs" />
                                                  )}
@@ -562,7 +567,9 @@ export default function VersionsPage() {
                                     <FormItem>
                                         <FormLabel className="sr-only">Description</FormLabel>
                                         <FormControl>
-                                            <Textarea placeholder="Describe the change..." {...field} />
+                                            <div className="h-48 pb-12">
+                                              <RichTextEditor value={field.value} onChange={field.onChange} />
+                                            </div>
                                         </FormControl>
                                     </FormItem>
                                     )}

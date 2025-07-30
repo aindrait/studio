@@ -142,7 +142,7 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                                 {versionIcons[change.type]}
                             </div>
                               <div>
-                                <p>{change.description}</p>
+                                <div className="prose prose-sm dark:prose-invert max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: change.description }} />
                                 {change.image && (
                                     <img src={change.image} alt="" className="mt-2 rounded-md border max-w-xs" />
                                 )}
