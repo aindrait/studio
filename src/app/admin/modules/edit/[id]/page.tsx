@@ -48,8 +48,8 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
     },
     formats: [
         "header", "font", "size",
-        "bold", "italic", "underline", "strike",
-        "list", "bullet", "indent",
+        "bold", "italic", "underline", "strike", "blockquote",
+        "list", "indent",
         "link", "image", "color", "background"
     ],
     theme: 'snow'
