@@ -216,9 +216,12 @@ export default function Home() {
             <div className="w-7 h-7" />
           </div>
         </header>
-        <main className="p-4 md:p-8">
+        <main className="p-4 md:p-8 flex-1">
           <DocumentationViewer module={selectedModule} />
         </main>
+        <footer className="text-center p-4 text-xs text-muted-foreground">
+            Mukti Group @2025
+        </footer>
       </SidebarInset>
     </SidebarProvider>
   );
