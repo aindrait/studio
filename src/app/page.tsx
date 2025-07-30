@@ -135,7 +135,10 @@ export default function Home() {
               <p className="text-xs text-sidebar-foreground/80">{appSettings?.appSubtitle}</p>
             </div>
           </div>
-            <div className="relative mt-2">
+        </SidebarHeader>
+        <SidebarHeader className="h-20 p-4 border-b flex-shrink-0" />
+        <SidebarContent className="p-4">
+            <div className="relative mb-4">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search modules..."
@@ -144,9 +147,6 @@ export default function Home() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-        </SidebarHeader>
-        <SidebarContent>
-          
           <SidebarMenu>
              {loading ? (
               <p className="p-2 text-sm text-muted-foreground">Loading...</p>
@@ -211,11 +211,13 @@ export default function Home() {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center justify-between p-4 border-b">
-          <SidebarTrigger />
-          <h2 className="text-xl font-bold font-headline">
-            {selectedModule ? selectedModule.name : "Welcome"}
-          </h2>
+        <header className="flex items-center justify-between p-4 border-b h-20">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger />
+            <h2 className="text-xl font-bold font-headline">
+              {selectedModule ? selectedModule.name : "Welcome"}
+            </h2>
+          </div>
           <div className="flex items-center gap-2">
             <ThemeSwitcher />
             <div className="w-7 h-7" />
