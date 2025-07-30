@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -220,7 +219,7 @@ export default function Home() {
           <DocumentationViewer module={selectedModule} />
         </main>
         <footer className="text-center p-4 text-xs text-muted-foreground">
-            Mukti Group @2025
+            Mukti Group @{new Date().getFullYear()}
         </footer>
       </SidebarInset>
     </SidebarProvider>
