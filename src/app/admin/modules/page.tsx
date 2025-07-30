@@ -26,14 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle, MoreHorizontal, Trash2, Pencil } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Trash2, Pencil, Star } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getModules, deleteModule, getCategories } from "@/ai/flows/module-crud";
+import { getModules, deleteModule, getCategories, updateModule } from "@/ai/flows/module-crud";
 import { Module, Category } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
@@ -116,6 +116,24 @@ export default function ModulesPage() {
   const handleEdit = (moduleId: string) => {
     router.push(`/admin/modules/edit/${moduleId}`);
   };
+
+  const handleSetWelcome = async (module: Module) => {
+    try {
+        const updatedModule = { ...module, isWelcome: true };
+        await updateModule(updatedModule);
+        toast({
+            title: "Welcome Page Set",
+            description: `"${module.name}" is now the welcome page.`
+        });
+        fetchModulesAndCategories();
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not set the welcome page."
+        });
+    }
+  };
   
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -172,7 +190,10 @@ export default function ModulesPage() {
             <TableBody>
               {paginatedModules.map((module) => (
                 <TableRow key={module.id}>
-                  <TableCell className="font-medium">{module.name}</TableCell>
+                  <TableCell className="font-medium flex items-center gap-2">
+                    {module.isWelcome && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+                    {module.name}
+                  </TableCell>
                   <TableCell>{module.category}</TableCell>
                   <TableCell>{module.tags.join(", ")}</TableCell>
                   <TableCell>
@@ -187,6 +208,12 @@ export default function ModulesPage() {
                           <Pencil className="mr-2 h-4 w-4" />
                           Edit
                         </DropdownMenuItem>
+                         {!module.isWelcome && (
+                            <DropdownMenuItem onClick={() => handleSetWelcome(module)}>
+                                <Star className="mr-2 h-4 w-4" />
+                                Set as welcome page
+                            </DropdownMenuItem>
+                         )}
                         <DropdownMenuItem onClick={() => handleDelete(module.id)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete

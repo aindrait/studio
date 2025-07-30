@@ -94,6 +94,7 @@ const ModuleSchema = z.object({
       description: z.string(),
     })),
   })),
+  isWelcome: z.boolean().optional(),
 });
 
 const ChangePasswordSchema = z.object({
@@ -249,9 +250,15 @@ export const createModuleFlow = ai.defineFlow(
   },
   async (module) => {
     const db = await readDb();
-    db.modules.push(module);
+    // Ensure isWelcome is false for new modules if not specified
+    const newModule = { ...module, isWelcome: module.isWelcome || false };
+    if (newModule.isWelcome) {
+        // If the new module is set as welcome, unset all others
+        db.modules.forEach(m => m.isWelcome = false);
+    }
+    db.modules.push(newModule);
     await writeDb(db);
-    return module;
+    return newModule;
   }
 );
 
@@ -265,6 +272,15 @@ export const updateModuleFlow = ai.defineFlow(
     const db = await readDb();
     const index = db.modules.findIndex(m => m.id === module.id);
     if (index !== -1) {
+      // If this module is being set as the welcome page,
+      // ensure all other modules are not the welcome page.
+      if (module.isWelcome) {
+        db.modules.forEach(m => {
+          if (m.id !== module.id) {
+            m.isWelcome = false;
+          }
+        });
+      }
       db.modules[index] = module;
       await writeDb(db);
       return module;

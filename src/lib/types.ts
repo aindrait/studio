@@ -20,6 +20,7 @@ export type Module = {
   content: string; // Rich text/HTML content
   image?: string;
   versions: Version[];
+  isWelcome?: boolean;
 };
 
 export type Category = {

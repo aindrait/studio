@@ -57,9 +57,13 @@ export default function Home() {
         setModules(fetchedModules);
         setCategories(fetchedCategories);
 
-        if (fetchedModules.length > 0 && !selectedModule) {
+        const welcomeModule = fetchedModules.find(m => m.isWelcome);
+        if (welcomeModule) {
+          setSelectedModule(welcomeModule);
+        } else if (fetchedModules.length > 0) {
            setSelectedModule(fetchedModules[0]);
         }
+
       } catch (error) {
         toast({
           variant: "destructive",
