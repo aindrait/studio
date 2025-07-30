@@ -141,19 +141,21 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
           <CardContent>
              {module.versions.length > 0 ? (
                 <>
-                   {hasMoreVersions && (
+                   
                     <Dialog open={isAllVersionsOpen} onOpenChange={setIsAllVersionsOpen}>
                         <DialogTrigger asChild>
+                           {module.versions.length > 0 && (
                             <Button variant="outline" size="sm" className="w-full mb-4">
                                 <History className="mr-2 h-4 w-4" /> View All
                             </Button>
+                           )}
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-4xl">
                             <DialogHeader>
                                 <DialogTitle>Full Changelog: {module.name}</DialogTitle>
                             </DialogHeader>
                             <div className="max-h-[70vh] overflow-y-auto pr-4">
-                            <Accordion type="single" collapsible className="w-full" defaultValue={`item-${module.versions[0]?.version}`}>
+                            <Accordion type="single" collapsible className="w-full">
                                 {module.versions.map((version) => (
                                     <AccordionItem
                                     key={`modal-${version.version}`}
@@ -195,8 +197,8 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                             </DialogFooter>
                         </DialogContent>
                     </Dialog>
-                   )}
-                  <Accordion type="single" collapsible className="w-full" defaultValue={`item-${module.versions[0]?.version}`}>
+                   
+                  <Accordion type="single" collapsible className="w-full">
                     {module.versions.slice(0, MAX_VERSIONS_VISIBLE).map((version) => (
                         <AccordionItem
                         key={version.version}
