@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import RichTextEditor from '@/components/rich-text-editor';
+import { Textarea } from '@/components/ui/textarea';
 
 
 const versionChangeSchema = z.object({
@@ -355,9 +355,7 @@ export default function VersionsPage() {
                                 <FormItem>
                                     <FormLabel className="sr-only">Description</FormLabel>
                                     <FormControl>
-                                    <div className="h-48 pb-10">
-                                        <RichTextEditor value={field.value} onChange={field.onChange} />
-                                    </div>
+                                    <Textarea placeholder="Describe the change..." {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -452,8 +450,8 @@ export default function VersionsPage() {
                                             <div className="mt-1">
                                                 {versionIcons[change.type]}
                                             </div>
-                                             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground">
-                                                <div dangerouslySetInnerHTML={{ __html: change.description }} />
+                                             <div>
+                                                <p>{change.description}</p>
                                                  {change.image && (
                                                     <img src={change.image} alt="Changelog image" className="mt-2 rounded-md border max-w-xs" />
                                                  )}
@@ -564,9 +562,7 @@ export default function VersionsPage() {
                                     <FormItem>
                                         <FormLabel className="sr-only">Description</FormLabel>
                                         <FormControl>
-                                            <div className="h-48 pb-10">
-                                                <RichTextEditor value={field.value} onChange={field.onChange} />
-                                            </div>
+                                            <Textarea placeholder="Describe the change..." {...field} />
                                         </FormControl>
                                     </FormItem>
                                     )}
