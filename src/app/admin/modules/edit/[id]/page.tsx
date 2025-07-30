@@ -32,19 +32,34 @@ type FormValues = z.infer<typeof formSchema>;
 
 
 function RichTextEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const { quill, quillRef } = useQuill();
+  const { quill, quillRef } = useQuill({
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            ['link', 'image'],
+            ['clean']
+        ],
+    },
+    formats: ["bold", "italic", "underline", "strike", "list", "bullet", "indent", "link", "image"],
+    theme: 'snow'
+  });
 
   useEffect(() => {
     if (quill) {
-      quill.on('text-change', () => {
-        onChange(quill.root.innerHTML);
+      quill.on('text-change', (_delta, _oldDelta, source) => {
+        if (source === 'user') {
+            onChange(quill.root.innerHTML);
+        }
       });
     }
   }, [quill, onChange]);
 
   useEffect(() => {
-    if (quill && value !== quill.root.innerHTML) {
-      quill.clipboard.dangerouslyPasteHTML(value);
+    if (quill && value && value !== quill.root.innerHTML) {
+        const delta = quill.clipboard.convert(value);
+        quill.setContents(delta, 'silent');
     }
   }, [quill, value]);
 
@@ -115,14 +130,15 @@ export default function EditModulePage() {
   }, [id, router, toast, form]);
 
   const handleAddTag = () => {
-    if (tagInput && !form.getValues('tags').includes(tagInput)) {
-      form.setValue('tags', [...form.getValues('tags'), tagInput]);
+    const currentTags = form.getValues('tags');
+    if (tagInput && !currentTags.includes(tagInput)) {
+      form.setValue('tags', [...currentTags, tagInput], { shouldValidate: true, shouldDirty: true });
       setTagInput('');
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    form.setValue('tags', form.getValues('tags').filter(tag => tag !== tagToRemove));
+    form.setValue('tags', form.getValues('tags').filter(tag => tag !== tagToRemove), { shouldValidate: true, shouldDirty: true });
   };
 
 
@@ -250,7 +266,7 @@ export default function EditModulePage() {
                                 <FormLabel>Module Manual Content</FormLabel>
                                 <FormControl>
                                    <div className="h-96 pb-12">
-                                      <RichTextEditor {...field} />
+                                      <RichTextEditor value={field.value} onChange={field.onChange} />
                                     </div>
                                 </FormControl>
                                 <FormMessage />
@@ -259,7 +275,7 @@ export default function EditModulePage() {
                     />
                 </CardContent>
                 <CardFooter className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => router.push('/admin/modules')}>Cancel</Button>
+                    <Button type="button" variant="outline" onClick={() => router.push('/admin/modules')}>Cancel</Button>
                     <Button type="submit" disabled={form.formState.isSubmitting}>
                         {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
                     </Button>
