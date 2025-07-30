@@ -75,3 +75,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Quill.js custom styles for prose */
+@layer components {
+  .prose .ql-indent-1 { @apply pl-6; }
+  .prose .ql-indent-2 { @apply pl-12; }
+  .prose .ql-indent-3 { @apply pl-20; }
+  .prose .ql-indent-4 { @apply pl-24; }
+  .prose .ql-indent-5 { @apply pl-32; }
+  .prose .ql-indent-6 { @apply pl-40; }
+  .prose .ql-indent-7 { @apply pl-48; }
+  .prose .ql-indent-8 { @apply pl-56; }
+
+  .prose p {
+    @apply my-4; /* Ensure consistent paragraph spacing */
+  }
+}
