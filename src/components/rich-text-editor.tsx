@@ -30,7 +30,7 @@ const formats = [
   'color', 'background',
   'script',
   'header', 'blockquote', 'code-block',
-  'list', 'bullet', 'indent',
+  'list', 'indent',
   'direction', 'align',
   'link', 'image'
 ];
