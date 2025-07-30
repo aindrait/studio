@@ -36,6 +36,7 @@ import Link from "next/link";
 import { getModules, getCategories } from "@/ai/flows/module-crud";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const [modules, setModules] = React.useState<Module[]>([]);
@@ -60,6 +61,15 @@ export default function Home() {
         const welcomeModule = fetchedModules.find(m => m.isWelcome);
         if (welcomeModule) {
           setSelectedModule(welcomeModule);
+        } else if (fetchedCategories.length > 0 && fetchedModules.length > 0) {
+            // Find the first module in the first category that has modules
+            const firstCategoryWithModules = fetchedCategories.find(c => fetchedModules.some(m => m.category === c.name));
+            if (firstCategoryWithModules) {
+              const firstModule = fetchedModules.find(m => m.category === firstCategoryWithModules.name);
+              setSelectedModule(firstModule || null);
+            } else {
+              setSelectedModule(fetchedModules[0] || null);
+            }
         } else if (fetchedModules.length > 0) {
            setSelectedModule(fetchedModules[0]);
         }
@@ -78,20 +88,21 @@ export default function Home() {
   }, []); 
 
 
-  const filteredModules = React.useMemo(() => {
-    if (!search) return modules;
-    return modules.filter(
-      (module) =>
-        module.name.toLowerCase().includes(search.toLowerCase()) ||
-        module.description.toLowerCase().includes(search.toLowerCase()) ||
-        module.tags.some((tag) =>
-          tag.toLowerCase().includes(search.toLowerCase())
-        )
-    );
+  const filteredModuleIds = React.useMemo(() => {
+    if (!search) return new Set(modules.map(m => m.id));
+    return new Set(modules
+      .filter(
+        (module) =>
+          module.name.toLowerCase().includes(search.toLowerCase()) ||
+          module.description.toLowerCase().includes(search.toLowerCase()) ||
+          module.tags.some((tag) =>
+            tag.toLowerCase().includes(search.toLowerCase())
+          )
+      ).map(m => m.id));
   }, [search, modules]);
 
   const modulesByCategory = React.useMemo(() => {
-    return filteredModules.reduce((acc, module) => {
+    return modules.reduce((acc, module) => {
       const { category } = module;
       if (!acc[category]) {
         acc[category] = [];
@@ -99,12 +110,15 @@ export default function Home() {
       acc[category].push(module);
       return acc;
     }, {} as Record<string, Module[]>);
-  }, [filteredModules]);
+  }, [modules]);
   
   const visibleCategories = React.useMemo(() => {
-    const visibleCategoryNames = Object.keys(modulesByCategory);
-    return categories.filter(cat => visibleCategoryNames.includes(cat.name));
-  }, [categories, modulesByCategory]);
+    if (!search) {
+      return categories;
+    }
+    const visibleCategoryNames = new Set(modules.filter(m => filteredModuleIds.has(m.id)).map(m => m.category));
+    return categories.filter(cat => visibleCategoryNames.has(cat.name));
+  }, [categories, modules, filteredModuleIds, search]);
 
 
   return (
@@ -135,38 +149,50 @@ export default function Home() {
             <Accordion
               type="multiple"
               className="w-full"
-              key={visibleCategories.map(c => c.name).join('-')}
+              defaultValue={categories.map(c => c.name)}
             >
-              {visibleCategories.map((category) => (
-                <AccordionItem
-                  key={category.name}
-                  value={category.name}
-                  className="border-none"
-                >
-                  <AccordionTrigger className="px-2 py-1 text-sm font-medium hover:no-underline hover:bg-accent rounded-md">
-                    <div className="flex items-center gap-2">
-                      <LayoutGrid className="w-4 h-4" />
-                      <span>{category.name}</span>
-                    </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-1">
-                    <SidebarMenu className="pl-4">
-                      {modulesByCategory[category.name].map((module) => (
-                        <SidebarMenuItem key={module.id}>
-                          <SidebarMenuButton
-                            onClick={() => setSelectedModule(module)}
-                            isActive={selectedModule?.id === module.id}
-                            className="w-full justify-start"
-                          >
-                            <BookOpen />
-                            {module.name}
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
+              {categories.map((category) => {
+                const categoryModules = modulesByCategory[category.name] || [];
+                const hasVisibleModules = categoryModules.some(m => filteredModuleIds.has(m.id));
+
+                if (search && !hasVisibleModules) return null;
+
+                return (
+                  <AccordionItem
+                    key={category.name}
+                    value={category.name}
+                    className="border-none"
+                  >
+                    <AccordionTrigger className="px-2 py-1 text-sm font-medium hover:no-underline hover:bg-accent rounded-md">
+                      <div className="flex items-center gap-2">
+                        <LayoutGrid className="w-4 h-4" />
+                        <span>{category.name}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-1">
+                      <SidebarMenu className="pl-4">
+                        {categoryModules.map((module) => (
+                          <SidebarMenuItem key={module.id} className={cn(
+                            "transition-opacity duration-300",
+                            search && !filteredModuleIds.has(module.id) ? 'opacity-30' : 'opacity-100'
+                          )}>
+                            <SidebarMenuButton
+                              onClick={() => setSelectedModule(module)}
+                              isActive={selectedModule?.id === module.id}
+                              className={cn("w-full justify-start", 
+                                search && filteredModuleIds.has(module.id) && "ring-2 ring-primary/50"
+                              )}
+                            >
+                              <BookOpen />
+                              {module.name}
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </AccordionContent>
+                  </AccordionItem>
+                )
+              })}
             </Accordion>
             )}
           </SidebarMenu>
