@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { getModules, updateModule, getModule } from '@/ai/flows/module-crud';
 import type { Module, Version } from '@/lib/types';
@@ -34,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from '@/components/ui/badge';
+import RichTextEditor from '@/components/rich-text-editor';
 
 
 const versionChangeSchema = z.object({
@@ -120,7 +119,8 @@ export default function VersionsPage() {
 
   useEffect(() => {
     fetchModulesData();
-  }, [toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   const handleModuleSelect = (moduleId: string) => {
     form.setValue('moduleId', moduleId);
@@ -353,7 +353,9 @@ export default function VersionsPage() {
                             <FormItem className="md:col-span-4">
                                 <FormLabel className="sr-only">Description</FormLabel>
                                 <FormControl>
-                                  <Textarea placeholder="Describe the change..." {...field} />
+                                   <div className="h-48 pb-10">
+                                      <RichTextEditor value={field.value} onChange={field.onChange} />
+                                   </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -434,7 +436,9 @@ export default function VersionsPage() {
                                             <div className="mt-1">
                                                 {versionIcons[change.type]}
                                             </div>
-                                            <span className="text-sm">{change.description}</span>
+                                             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground"
+                                                dangerouslySetInnerHTML={{ __html: change.description }}
+                                              />
                                         </li>
                                     ))}
                                 </ul>
@@ -539,7 +543,11 @@ export default function VersionsPage() {
                                 render={({ field }) => (
                                 <FormItem className="md:col-span-4">
                                      <FormLabel className="sr-only">Description</FormLabel>
-                                    <FormControl><Textarea {...field} /></FormControl>
+                                    <FormControl>
+                                        <div className="h-48 pb-10">
+                                            <RichTextEditor value={field.value} onChange={field.onChange} />
+                                        </div>
+                                    </FormControl>
                                 </FormItem>
                                 )}
                             />
@@ -581,5 +589,4 @@ export default function VersionsPage() {
     </div>
   );
 }
-
     

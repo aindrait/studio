@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -13,24 +14,17 @@ export default function RichTextEditor({ value, onChange }: RichTextEditorProps)
   const { quill, quillRef } = useQuill({
     modules: {
         toolbar: [
-            [{ 'font': [] }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
             ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            ['blockquote'],
-            [{ 'align': [] }],
             [{ 'indent': '-1'}, { 'indent': '+1' }],
-            ['link', 'image'],
+            ['link'],
             ['clean']
         ],
     },
     formats: [
-        "header", "font", "size",
         "bold", "italic", "underline", "strike",
-        "list", "indent", "align",
-        "link", "image", "color", "background"
+        "list", "indent", 
+        "link",
     ],
     theme: 'snow'
   });

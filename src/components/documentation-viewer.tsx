@@ -141,7 +141,9 @@ export function DocumentationViewer({ module }: DocumentationViewerProps) {
                             <div className="mt-1">
                                 {versionIcons[change.type]}
                             </div>
-                            <span className="text-sm">{change.description}</span>
+                             <div className="prose prose-sm dark:prose-invert max-w-none text-foreground"
+                                dangerouslySetInnerHTML={{ __html: change.description }}
+                              />
                             </li>
                         ))}
                         </ul>
