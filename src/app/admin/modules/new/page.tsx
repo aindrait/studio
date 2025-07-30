@@ -41,7 +41,7 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
             ['clean']
         ],
     },
-    formats: ["bold", "italic", "underline", "strike", "list", "bullet", "indent", "link", "image"],
+    formats: ["bold", "italic", "underline", "strike", "list", "indent", "link", "image"],
     theme: 'snow'
   });
 

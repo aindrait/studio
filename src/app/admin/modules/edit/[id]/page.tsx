@@ -1,9 +1,9 @@
 
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuill } from 'react-quilljs';
@@ -42,11 +42,11 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
             ['clean']
         ],
     },
-    formats: ["bold", "italic", "underline", "strike", "list", "bullet", "indent", "link", "image"],
+    formats: ["bold", "italic", "underline", "strike", "list", "indent", "link", "image"],
     theme: 'snow'
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (quill) {
       quill.on('text-change', (_delta, _oldDelta, source) => {
         if (source === 'user') {
@@ -56,10 +56,9 @@ function RichTextEditor({ value, onChange }: { value: string; onChange: (value: 
     }
   }, [quill, onChange]);
 
-  useEffect(() => {
-    if (quill && value && value !== quill.root.innerHTML) {
-        const delta = quill.clipboard.convert(value);
-        quill.setContents(delta, 'silent');
+  React.useEffect(() => {
+    if (quill && value !== quill.root.innerHTML) {
+        quill.clipboard.dangerouslyPasteHTML(value);
     }
   }, [quill, value]);
 
@@ -78,10 +77,10 @@ export default function EditModulePage() {
   const { toast } = useToast();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
 
-  const [module, setModule] = useState<Module | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tagInput, setTagInput] = useState('');
+  const [initialModule, setInitialModule] = React.useState<Module | null>(null);
+  const [categories, setCategories] = React.useState<Category[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [tagInput, setTagInput] = React.useState('');
 
 
   const form = useForm<FormValues>({
@@ -95,7 +94,7 @@ export default function EditModulePage() {
     },
   });
 
-   useEffect(() => {
+   React.useEffect(() => {
     if (id) {
       const fetchModuleAndCategories = async () => {
         try {
@@ -106,7 +105,7 @@ export default function EditModulePage() {
           ]);
           
           if (fetchedModule) {
-            setModule(fetchedModule);
+            setInitialModule(fetchedModule);
             form.reset({
                 name: fetchedModule.name,
                 description: fetchedModule.description,
@@ -143,10 +142,10 @@ export default function EditModulePage() {
 
 
   const onSubmit = async (values: FormValues) => {
-    if (!module) return;
+    if (!initialModule) return;
     try {
         const updatedModuleData = {
-            ...module,
+            ...initialModule,
             ...values,
         };
       await updateModule(updatedModuleData);
@@ -161,7 +160,7 @@ export default function EditModulePage() {
     return <p className="p-4">Loading module...</p>;
   }
   
-  if (!module) {
+  if (!initialModule) {
     return <p className="p-4">Module not found.</p>;
   }
 
@@ -169,7 +168,7 @@ export default function EditModulePage() {
     <Card>
         <CardHeader>
             <CardTitle>Edit Module</CardTitle>
-            <CardDescription>Update the details for the &quot;{module.name}&quot; module.</CardDescription>
+            <CardDescription>Update the details for the &quot;{initialModule.name}&quot; module.</CardDescription>
         </CardHeader>
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
