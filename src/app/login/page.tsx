@@ -44,9 +44,9 @@ export default function LoginPage() {
   const onSubmit = async (data: FormValues) => {
     setLoading(true);
     try {
-      const user = await loginUser(data.username, data.password);
-      if (user) {
-        toast({ title: "Login Successful", description: `Welcome back, ${user.username}!` });
+      const response = await loginUser(data.username, data.password);
+      if (response && response.user) {
+        toast({ title: "Login Successful", description: `Welcome back, ${response.user.username}!` });
         const callbackUrl = searchParams.get('callbackUrl');
         window.location.href = callbackUrl || '/admin';
       } else {

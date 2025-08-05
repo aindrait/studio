@@ -90,7 +90,7 @@ const ModuleSchema = z.object({
   category: z.string(),
   tags: z.array(z.string()),
   description: z.string(),
-  content: z.string(),
+  content: z.string(), // Rich text/HTML content
   image: z.string().optional(),
   versions: z.array(z.object({
     version: z.string(),
@@ -135,7 +135,7 @@ export const updateAppSettingsFlow = ai.defineFlow({
 export const loginUserFlow = ai.defineFlow({
     name: 'loginUserFlow',
     inputSchema: z.object({ username: z.string(), password: z.string() }),
-    outputSchema: AdminUserSchema.omit({ password: true }).optional(),
+    outputSchema: z.object({ user: AdminUserSchema.omit({ password: true }).nullable() }),
 }, async ({ username, password }) => {
     const db = await readDb();
     const user = db.users.find(u => u.username === username && u.password === password);
@@ -143,10 +143,11 @@ export const loginUserFlow = ai.defineFlow({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...userWithoutPassword } = user;
         await login(userWithoutPassword);
-        return userWithoutPassword;
+        return { user: userWithoutPassword };
     }
-    return undefined;
+    return { user: null };
 });
+
 
 export const getAdminUsersFlow = ai.defineFlow({
     name: 'getAdminUsersFlow',
@@ -461,7 +462,7 @@ export async function reorderCategories(categories: Category[]): Promise<boolean
     return await reorderCategoriesFlow(categories);
 }
 
-export async function loginUser(username: string, password: string):Promise<Omit<AdminUser, 'password'> | undefined> {
+export async function loginUser(username: string, password: string):Promise<{ user: Omit<AdminUser, 'password'> | null }> {
     return await loginUserFlow({ username, password });
 }
 
